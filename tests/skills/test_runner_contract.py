@@ -45,7 +45,7 @@ def test_engine_golden_reports_are_preserved(path):
     lambda r: r["guard"].update(complete=False),
     lambda r: r["guard"].update(observation_complete=False),
     lambda r: r["run"].update(sys_prefix="other venv"),
-    lambda r: r["run"].update(python="other python"),
+    lambda r: r["run"].update(python_resolved="other python"),
     lambda r: r["run"].update(cwd="other machine"),
     lambda r: r["run"].update(pytest_args=["different.py"]),
     lambda r: r["targets"][0].update(expected_root="other source"),
@@ -70,6 +70,19 @@ def test_native_exit_six_and_test_failure_source_pass():
         bound["process_exit_code"] = 0
         with pytest.raises(ValueError, match="exit mismatch"):
             runner.validate(report, bound)
+
+
+@pytest.mark.parametrize("code", [1, 2, 3, 4, 5, 6])
+def test_unusable_report_preserves_native_nonzero_exit(code):
+    assert runner.exit_status({"result": "unusable_report", "process_exit_code": code}) == code
+    assert runner.exit_status({"result": "unusable_report", "process_exit_code": 0}) == 2
+
+
+def test_interpreter_alias_same_environment_is_accepted():
+    report = json.loads((ROOT / "tests/golden/schema-v2-pass.json").read_text(encoding="utf-8"))
+    bound = copy.deepcopy(envelope(report))
+    bound["runtime"]["python"] = "python3"
+    assert runner.validate(report, bound) == report
 
 
 @pytest.mark.parametrize("payload", [None, "{bad", '{"schema_version":99}'])
@@ -158,7 +171,10 @@ def test_independent_skill_executes_real_console(tmp_path, mode, code, status):
         "schema_version": 1, "expect": {"pkg": "other" if mode in {"explicit", "wrong"}
                                        else "pkg"},
     }), encoding="utf-8")
-    command = [sys.executable, str(skill / "scripts/run_check.py"), "--cwd", str(project)]
+    # POSIX pip shebang may use python while the selected interpreter is python3.
+    alias = Path(sys.executable).parent / "python3"
+    selected = str(alias) if sys.platform != "win32" and alias.exists() else sys.executable
+    command = [selected, str(skill / "scripts/run_check.py"), "--cwd", str(project)]
     if mode == "explicit":
         command += ["--expect", "pkg=pkg"]
     result = subprocess.run([*command, "--", "-q"], capture_output=True, text=True,

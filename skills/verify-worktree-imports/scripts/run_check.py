@@ -74,7 +74,13 @@ def validate(report, envelope):
     if type(report.get("schema_version")) is not int or report["schema_version"] != 2:
         raise ValueError("Unsupported report schema")
     run, guard, targets = report["run"], report["guard"], report["targets"]
+    if not isinstance(run["python"], str) or not run["python"]:
+        raise ValueError("Missing raw interpreter identity")
     for key, value in envelope["runtime"].items():
+        if key == "python":
+            # python and python3 can be aliases in the same venv. Keep both raw
+            # paths as evidence; resolved binary PLUS prefixes identify the env.
+            continue
         if run[key] != value:
             raise ValueError(f"Report runtime mismatch: {key}")
     if run["cwd"] != envelope["cwd"] or run["pytest_args"] != envelope["pytest_args"]:
@@ -158,6 +164,13 @@ def run_check(cwd, expectations, pytest_args):
         save()
 
 
+def exit_status(result):
+    code = result.get("process_exit_code")
+    if code:
+        return code  # Even a missing report must not hide a native nonzero exit.
+    return 0 if result["result"] == "usable_report" else 2
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--cwd", type=Path, required=True)
@@ -169,10 +182,10 @@ def main():
         pytest_args = pytest_args[1:]
     try:
         result = run_check(args.cwd.resolve(), args.expect, pytest_args)
-    except (OSError, ValueError, ImportError) as error:
+    except (OSError, ValueError, ImportError, KeyError, TypeError, AttributeError) as error:
         result = {"result": "not_started", "error": str(error)}
     print(json.dumps(result, ensure_ascii=True, indent=2))
-    return result["process_exit_code"] if result["result"] == "usable_report" else 2
+    return exit_status(result)
 
 
 if __name__ == "__main__":

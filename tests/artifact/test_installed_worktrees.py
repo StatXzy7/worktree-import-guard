@@ -190,6 +190,19 @@ def test_wheel_console_scripts_pth_and_pep660_across_worktrees(
     run([str(pytest_script), "-q"], cwd=feature, env=env)
     pth_report = guard_run(wt_import, feature, "pth-report.json", expected=1, env=env)
     assert pth_report["targets"][0]["reasons"] == ["CROSS_WORKTREE_IMPORT"]  # type: ignore[index]
+    # The standalone Skill must preserve the engine's real cross-worktree result.
+    skill = tmp_path / "standalone skill"
+    shutil.copytree(project_root / "skills/verify-worktree-imports", skill,
+                    ignore=shutil.ignore_patterns("__pycache__"))
+    helper = run(
+        [str(python), str(skill / "scripts/run_check.py"), "--cwd", str(feature),
+         "--expect", "demo_pkg=src/demo_pkg", "--", "-q"],
+        cwd=feature, expected=1, env=env,
+    )
+    bound = json.loads(helper.stdout)
+    assert bound["result"] == "usable_report"
+    skill_report = json.loads(Path(bound["report_path"]).read_text(encoding="utf-8"))
+    assert skill_report["targets"][0]["reasons"] == ["CROSS_WORKTREE_IMPORT"]
     stale_pth.unlink()
 
     run(
