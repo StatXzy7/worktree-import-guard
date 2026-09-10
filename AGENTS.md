@@ -6,6 +6,26 @@ Catch Python tests that pass after importing explicitly selected packages from t
 worktree. This is current-process runtime provenance checking, not environment management or a
 sandbox.
 
+Make first use understandable: suggest package directories statically, require confirmation
+before saving a contract or running setup tests, and distinguish test results from source results.
+Each user-facing addition should remove a concrete installation, selection, or repeat-use burden.
+Never hide UNKNOWN, infer PASS from a suggestion, or automatically repair a user's environment.
+
+## Product principles
+
+- Help ordinary Python developers find which source their tests actually loaded.
+- Recommend one installation and check path in the project's existing pytest environment.
+- Explain what happened before technical evidence, and give an actionable next step.
+- Keep PASS scoped to observed selected packages; never hide UNKNOWN or guess a safe origin.
+- Diagnose without repairing the environment or expanding into environment management.
+- Keep onboarding short; put schemas, benchmarks, and release evidence in maintainer docs.
+- Prefer small, reliable changes that reduce a concrete installation or diagnosis problem.
+
+## Text encoding
+
+- Read and write text as UTF-8, preferably without BOM; use explicit UTF-8 for PowerShell I/O.
+- Preserve existing content and verify Chinese text after editing.
+
 ## Architecture
 
 - `cli.py` coordinates the run without importing pytest early.
@@ -32,6 +52,6 @@ python -m build
 - UNKNOWN must never become PASS.
 - Public reason codes and JSON schema are compatibility surfaces.
 - Use canonical path components, not string-prefix containment.
-- Preserve native pytest exit codes 2 through 5.
+- Preserve every native nonzero pytest exit, including exit 6 on versions that provide it.
 - Add a regression test for every provenance bug.
 

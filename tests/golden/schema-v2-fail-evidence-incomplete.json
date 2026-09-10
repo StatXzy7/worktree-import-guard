@@ -1,0 +1,11 @@
+{
+  "git": {"available": false, "current_worktree": null, "worktrees": []},
+  "guard": {"complete": false, "observation_complete": true, "status": "fail"},
+  "metrics": {},
+  "pytest": {"exit_code": 0},
+  "run": {"cwd": "cwd", "pytest_args": ["-q"], "pytest_version": "9.1.1", "python": "python", "python_resolved": "resolved-python", "python_version": "3.13.5", "sys_base_prefix": "base-prefix", "sys_prefix": "prefix"},
+  "schema_version": 2,
+  "scope": {"child_process_imports": false, "process": "current-pytest-process", "xdist": false},
+  "targets": [{"expected_root": "expected", "observations": [{"canonical_origin": null, "containing_worktree": null, "issue": "ORIGIN_UNRESOLVED", "module": "pkg.dynamic", "origin": null, "phase": "test", "source": "unit"}], "package": "pkg", "reasons": ["OUTSIDE_EXPECTED_ROOT"], "status": "fail"}],
+  "tool": {"name": "worktree-import-guard", "version": "0.1.0"}
+}

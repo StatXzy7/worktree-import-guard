@@ -1,0 +1,22 @@
+COMMAND=.venv\\Scripts\\pytest.exe --cov=worktree_import_guard --cov-report=term-missing -q -rs
+CWD=D:\worktree-import-guard
+s..............................................                          [100%]
+=============================== tests coverage ================================
+_______________ coverage: platform win32, python 3.13.5-final-0 _______________
+
+Name                                         Stmts   Miss Branch BrPart  Cover   Missing
+----------------------------------------------------------------------------------------
+src\worktree_import_guard\cli.py                87      5     22      8    88%   76, 80->82, 84, 92, 94->97, 99, 137->143, 147
+src\worktree_import_guard\git_worktrees.py      45      2     16      2    93%   33, 39
+src\worktree_import_guard\observer.py          211     25     48      9    87%   93->95, 115->117, 117->122, 122->exit, 156-157, 177-178, 196, 199-200, 206, 209-210, 220-222, 228, 235, 238-240, 260-262, 284-287, 294-295, 313
+src\worktree_import_guard\origins.py            56      3     24      3    92%   34, 46-47, 113->130, 121->130
+src\worktree_import_guard\pytest_plugin.py      37      3      6      2    88%   23, 26-27, 47->49
+----------------------------------------------------------------------------------------
+TOTAL                                          656     38    162     24    92%
+
+5 files skipped due to complete coverage.
+Required test coverage of 90.0% reached. Total coverage: 92.42%
+=========================== short test summary info ===========================
+SKIPPED [1] tests\artifact\test_installed_worktrees.py:115: set WTIG_RUN_ARTIFACT_TESTS=1 to run installation smoke tests
+46 passed, 1 skipped in 38.50s
+EXIT_CODE=0

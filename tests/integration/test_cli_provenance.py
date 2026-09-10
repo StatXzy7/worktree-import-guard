@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -20,9 +22,18 @@ def test_correct_origin_passes_and_json_is_stable(tmp_path: Path, run_guard) -> 
     result = run_guard(tmp_path, "--expect", "demo_pkg=demo_pkg", "--", "-q")
     assert result.completed.returncode == 0, result.completed.stdout + result.completed.stderr
     assert result.report["pytest"]["exit_code"] == 0
-    assert result.report["guard"] == {"complete": True, "status": "pass"}
+    assert result.report["guard"] == {
+        "complete": True,
+        "observation_complete": True,
+        "status": "pass",
+    }
     assert target(result.report)["reasons"] == ["MATCH"]
     assert result.report["scope"]["child_process_imports"] is False
+    assert result.report["run"]["python"] == sys.executable
+    assert result.report["run"]["sys_prefix"] == sys.prefix
+    assert result.report["run"]["sys_base_prefix"] == sys.base_prefix
+    assert result.report["run"]["python_version"]
+    assert result.report["run"]["pytest_version"]
 
 
 def test_unobserved_target_is_unknown(tmp_path: Path, run_guard) -> None:
@@ -82,6 +93,25 @@ def test_value():
     assert target(result.report)["observations"]
 
 
+def test_transient_import_inside_test_call_is_retained(tmp_path: Path, run_guard) -> None:
+    write_package(tmp_path, "call_pkg")
+    write_test(
+        tmp_path,
+        """\
+def test_value():
+    import sys
+    import call_pkg
+
+    assert call_pkg.VALUE == 42
+    sys.modules.pop("call_pkg")
+""",
+    )
+    result = run_guard(tmp_path, "--expect", "call_pkg=call_pkg", "--", "-q")
+    assert result.completed.returncode == 0, result.completed.stdout + result.completed.stderr
+    assert target(result.report)["status"] == "pass"
+    assert target(result.report)["observations"]
+
+
 def test_mixed_package_and_submodule_origins_fail(tmp_path: Path, run_guard) -> None:
     write_package(tmp_path, "mixed_pkg")
     external = tmp_path / "external"
@@ -118,7 +148,9 @@ def test_value():
     )
 
 
-def test_pytest_failure_and_native_exit_codes_are_preserved(tmp_path: Path, run_guard) -> None:
+def test_pytest_failure_and_native_exit_codes_are_preserved(
+    tmp_path: Path, run_guard, test_runner_command: list[str], guard_command: list[str]
+) -> None:
     write_package(tmp_path, "failure_pkg")
     write_test(tmp_path, "import failure_pkg\n\ndef test_failure():\n    assert False\n")
     failed = run_guard(tmp_path, "--expect", "failure_pkg=failure_pkg", "--", "-q")
@@ -135,6 +167,46 @@ def test_pytest_failure_and_native_exit_codes_are_preserved(tmp_path: Path, run_
     usage = run_guard(tmp_path, "--expect", "failure_pkg=failure_pkg", "--", "--bad-option")
     assert usage.completed.returncode == 4
     assert usage.report["pytest"]["exit_code"] == 4
+
+    # Exercise newer native states only on versions that actually define them.
+    if hasattr(pytest.ExitCode, "MAX_WARNINGS_ERROR"):
+        write_test(
+            tmp_path,
+            "import failure_pkg\nimport warnings\n\ndef test_warning():\n"
+            "    warnings.warn('native warning threshold', UserWarning)\n",
+        )
+        args = ["--max-warnings=0", "-q"]
+        native = subprocess.run(
+            [*test_runner_command, *args], cwd=tmp_path, capture_output=True, text=True
+        )
+        assert native.returncode == int(pytest.ExitCode.MAX_WARNINGS_ERROR)
+        guarded = run_guard(tmp_path, "--expect", "failure_pkg=failure_pkg", "--", *args)
+        assert guarded.completed.returncode == native.returncode
+        assert guarded.report["pytest"]["exit_code"] == native.returncode
+        assert guarded.report["guard"]["status"] == "pass"
+        report_failure = subprocess.run(
+            [*guard_command, "--expect", "failure_pkg=failure_pkg",
+             "--report-json", str(tmp_path), "--", *args],
+            cwd=tmp_path, capture_output=True, text=True,
+        )
+        assert report_failure.returncode == native.returncode
+        assert "could not write JSON report" in report_failure.stderr
+
+
+def test_pytest_keyboard_interrupt_exit_is_preserved(tmp_path: Path, run_guard) -> None:
+    write_package(tmp_path, "interrupt_pkg")
+    write_test(
+        tmp_path,
+        "import interrupt_pkg\n\ndef test_interrupt():\n    raise KeyboardInterrupt\n",
+    )
+    interrupted = run_guard(tmp_path, "--expect", "interrupt_pkg=interrupt_pkg", "--", "-q")
+    assert interrupted.completed.returncode == 2
+    assert interrupted.report["pytest"]["exit_code"] == 2
+    assert interrupted.report["guard"] == {
+        "complete": True,
+        "observation_complete": True,
+        "status": "pass",
+    }
 
 
 def test_spaces_and_no_git_context(tmp_path: Path, run_guard) -> None:
@@ -218,3 +290,27 @@ def test_malformed_and_duplicate_contracts_are_cli_errors(tmp_path: Path, run_gu
     )
     assert duplicate.completed.returncode == 2
     assert "duplicate expectation" in duplicate.completed.stderr
+
+
+def test_json_write_failure_does_not_mask_native_pytest_exit(
+    tmp_path: Path, guard_command: list[str]
+) -> None:
+    empty = tmp_path / "empty"
+    empty.mkdir()
+    completed = subprocess.run(
+        [
+            *guard_command,
+            "--report-json",
+            str(empty),
+            "--expect",
+            "missing_pkg=missing_pkg",
+            "--",
+            "-q",
+        ],
+        cwd=empty,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert completed.returncode == 5
+    assert "could not write JSON report" in completed.stderr

@@ -82,5 +82,49 @@ def test_origin_resolution_namespace_and_nonfilesystem(tmp_path: Path) -> None:
 
     builtin = resolve_observation(observation(origin="built-in"))
     assert builtin.issue is ReasonCode.NON_FILESYSTEM_ORIGIN
+    uri = resolve_observation(observation(origin="zip://archive/pkg.py"))
+    assert uri.issue is ReasonCode.NON_FILESYSTEM_ORIGIN
     unresolved = resolve_observation(observation())
     assert unresolved.issue is ReasonCode.ORIGIN_UNRESOLVED
+
+
+def test_relative_origin_is_frozen_at_capture_time(tmp_path: Path, monkeypatch) -> None:
+    first = tmp_path / "first"
+    second = tmp_path / "second"
+    first.mkdir()
+    second.mkdir()
+    frozen = ObservedModule(
+        "acme",
+        "acme.py",
+        "acme.py",
+        (),
+        "test",
+        "unit",
+        capture_cwd=str(first),
+        canonical_spec_origin=str(canonicalize_path(first / "acme.py")),
+        canonical_file=str(canonicalize_path(first / "acme.py")),
+        paths_frozen=True,
+    )
+    monkeypatch.chdir(second)
+    resolved = resolve_observation(frozen)
+    assert resolved.canonical_origin == canonicalize_path(first / "acme.py")
+
+
+def test_failed_frozen_path_is_not_reinterpreted_later(tmp_path: Path, monkeypatch) -> None:
+    later = tmp_path / "later"
+    later.mkdir()
+    (later / "acme.py").write_text("VALUE = 42\n", encoding="utf-8")
+    frozen_failure = ObservedModule(
+        "acme",
+        "acme.py",
+        "acme.py",
+        (),
+        "test",
+        "unit",
+        capture_cwd=str(tmp_path / "earlier"),
+        paths_frozen=True,
+    )
+    monkeypatch.chdir(later)
+    resolved = resolve_observation(frozen_failure)
+    assert resolved.canonical_origin is None
+    assert resolved.issue is ReasonCode.ORIGIN_UNRESOLVED

@@ -1,0 +1,433 @@
+{
+  "manifest_version": 2,
+  "phase": "B0",
+  "decision": "GO_FOR_RELEASE_PREPARATION",
+  "repository": "StatXzy7/worktree-import-guard",
+  "candidate": {
+    "baseline_sha": "dd4c5e468f3b029fab8d196eee36b8a1c9625b88",
+    "source_sha": "40b70c678d6d52bcfd1af4b39f6bef701e9e84e7",
+    "source_dirty": false,
+    "branch": "codex/b0-release-candidate",
+    "package_version": "0.1.0",
+    "schema_version": 2,
+    "pr_number": 1,
+    "pr_merge_sha": "ab650e1eec375fcc523d3dd9c8e60e0dc8fafbbd",
+    "shared_tree_sha": "dfd0723cd81439553af78feed3491dc570bb38a0",
+    "final_merged_sha": null
+  },
+  "builder": {
+    "platform": "ubuntu-latest",
+    "python": "3.13.15",
+    "pytest": "9.1.1",
+    "frontend": "build 1.6.1",
+    "backend": "hatchling 1.32.0"
+  },
+  "artifacts": [
+    {
+      "filename": "worktree_import_guard-0.1.0-py3-none-any.whl",
+      "bytes": 20777,
+      "sha256": "b718e8d6804f1d8292cf84066a5f6cdb280689ddc014178ed91a24ff2a49fe28",
+      "path": "dist/ci-34485447492/distributions/worktree_import_guard-0.1.0-py3-none-any.whl",
+      "built_by_run": 34485447492,
+      "built_by_job": 102898477931,
+      "installed_by_job": 102898712382,
+      "result": "pass"
+    },
+    {
+      "filename": "worktree_import_guard-0.1.0.tar.gz",
+      "bytes": 46221,
+      "sha256": "01708839e3feb0bbbdb39f5f3d3c70b6f6105546c99477cf12b7edf73bcdb06b",
+      "path": "dist/ci-34485447492/distributions/worktree_import_guard-0.1.0.tar.gz",
+      "built_by_run": 34485447492,
+      "built_by_job": 102898477931,
+      "installed_by_job": 102898712382,
+      "result": "pass"
+    }
+  ],
+  "runs": [
+    {
+      "run_id": 34485447492,
+      "run_attempt": 1,
+      "event": "push",
+      "workflow_path": ".github/workflows/ci.yml",
+      "url": "https://github.com/StatXzy7/worktree-import-guard/actions/runs/34485447492",
+      "result": "success",
+      "jobs": [
+        {
+          "job_id": 102898477800,
+          "name": "ubuntu-latest / Python 3.13",
+          "result": "success",
+          "platform": "ubuntu-latest",
+          "python": "3.13.15",
+          "pytest": "9.1.1",
+          "checkout_sha": "40b70c678d6d52bcfd1af4b39f6bef701e9e84e7",
+          "workflow_sha": "40b70c678d6d52bcfd1af4b39f6bef701e9e84e7",
+          "head_sha": "40b70c678d6d52bcfd1af4b39f6bef701e9e84e7",
+          "url": "https://github.com/StatXzy7/worktree-import-guard/actions/runs/34485447492/job/102898477800",
+          "log": "ci-34485447492/job-102898477800.log",
+          "plugins": {
+            "pytest-cov": "7.1.0",
+            "pytest-asyncio": "1.3.0",
+            "pytest-xdist": "3.8.0"
+          }
+        },
+        {
+          "job_id": 102898477931,
+          "name": "Quality and distributions",
+          "result": "success",
+          "platform": "ubuntu-latest",
+          "python": "3.13.15",
+          "pytest": "9.1.1",
+          "checkout_sha": "40b70c678d6d52bcfd1af4b39f6bef701e9e84e7",
+          "workflow_sha": "40b70c678d6d52bcfd1af4b39f6bef701e9e84e7",
+          "head_sha": "40b70c678d6d52bcfd1af4b39f6bef701e9e84e7",
+          "url": "https://github.com/StatXzy7/worktree-import-guard/actions/runs/34485447492/job/102898477931",
+          "log": "ci-34485447492/job-102898477931.log",
+          "plugins": {
+            "pytest-cov": "7.1.0",
+            "pytest-asyncio": "1.3.0",
+            "pytest-xdist": "3.8.0"
+          }
+        },
+        {
+          "job_id": 102898477984,
+          "name": "ubuntu-latest / Python 3.12",
+          "result": "success",
+          "platform": "ubuntu-latest",
+          "python": "3.12.14",
+          "pytest": "9.1.1",
+          "checkout_sha": "40b70c678d6d52bcfd1af4b39f6bef701e9e84e7",
+          "workflow_sha": "40b70c678d6d52bcfd1af4b39f6bef701e9e84e7",
+          "head_sha": "40b70c678d6d52bcfd1af4b39f6bef701e9e84e7",
+          "url": "https://github.com/StatXzy7/worktree-import-guard/actions/runs/34485447492/job/102898477984",
+          "log": "ci-34485447492/job-102898477984.log",
+          "plugins": {
+            "pytest-cov": "7.1.0",
+            "pytest-asyncio": "1.3.0",
+            "pytest-xdist": "3.8.0"
+          }
+        },
+        {
+          "job_id": 102898478006,
+          "name": "macos-latest / Python 3.13",
+          "result": "success",
+          "platform": "macos-latest",
+          "python": "3.13.15",
+          "pytest": "9.1.1",
+          "checkout_sha": "40b70c678d6d52bcfd1af4b39f6bef701e9e84e7",
+          "workflow_sha": "40b70c678d6d52bcfd1af4b39f6bef701e9e84e7",
+          "head_sha": "40b70c678d6d52bcfd1af4b39f6bef701e9e84e7",
+          "url": "https://github.com/StatXzy7/worktree-import-guard/actions/runs/34485447492/job/102898478006",
+          "log": "ci-34485447492/job-102898478006.log",
+          "plugins": {
+            "pytest-cov": "7.1.0",
+            "pytest-asyncio": "1.3.0",
+            "pytest-xdist": "3.8.0"
+          }
+        },
+        {
+          "job_id": 102898478200,
+          "name": "ubuntu-latest / Python 3.10",
+          "result": "success",
+          "platform": "ubuntu-latest",
+          "python": "3.10.21",
+          "pytest": "8.2.0",
+          "checkout_sha": "40b70c678d6d52bcfd1af4b39f6bef701e9e84e7",
+          "workflow_sha": "40b70c678d6d52bcfd1af4b39f6bef701e9e84e7",
+          "head_sha": "40b70c678d6d52bcfd1af4b39f6bef701e9e84e7",
+          "url": "https://github.com/StatXzy7/worktree-import-guard/actions/runs/34485447492/job/102898478200",
+          "log": "ci-34485447492/job-102898478200.log",
+          "plugins": {
+            "pytest-cov": "7.1.0",
+            "pytest-asyncio": "1.3.0",
+            "pytest-xdist": "3.8.0"
+          }
+        },
+        {
+          "job_id": 102898478219,
+          "name": "ubuntu-latest / Python 3.11",
+          "result": "success",
+          "platform": "ubuntu-latest",
+          "python": "3.11.16",
+          "pytest": "9.1.1",
+          "checkout_sha": "40b70c678d6d52bcfd1af4b39f6bef701e9e84e7",
+          "workflow_sha": "40b70c678d6d52bcfd1af4b39f6bef701e9e84e7",
+          "head_sha": "40b70c678d6d52bcfd1af4b39f6bef701e9e84e7",
+          "url": "https://github.com/StatXzy7/worktree-import-guard/actions/runs/34485447492/job/102898478219",
+          "log": "ci-34485447492/job-102898478219.log",
+          "plugins": {
+            "pytest-cov": "7.1.0",
+            "pytest-asyncio": "1.3.0",
+            "pytest-xdist": "3.8.0"
+          }
+        },
+        {
+          "job_id": 102898478305,
+          "name": "windows-latest / Python 3.13",
+          "result": "success",
+          "platform": "windows-latest",
+          "python": "3.13.15",
+          "pytest": "9.1.1",
+          "checkout_sha": "40b70c678d6d52bcfd1af4b39f6bef701e9e84e7",
+          "workflow_sha": "40b70c678d6d52bcfd1af4b39f6bef701e9e84e7",
+          "head_sha": "40b70c678d6d52bcfd1af4b39f6bef701e9e84e7",
+          "url": "https://github.com/StatXzy7/worktree-import-guard/actions/runs/34485447492/job/102898478305",
+          "log": "ci-34485447492/job-102898478305.log",
+          "plugins": {
+            "pytest-cov": "7.1.0",
+            "pytest-asyncio": "1.3.0",
+            "pytest-xdist": "3.8.0"
+          }
+        },
+        {
+          "job_id": 102898712382,
+          "name": "Installed wheel, sdist, and worktrees",
+          "result": "success",
+          "platform": "ubuntu-latest",
+          "python": "3.13.15",
+          "pytest": "9.1.1",
+          "checkout_sha": "40b70c678d6d52bcfd1af4b39f6bef701e9e84e7",
+          "workflow_sha": "40b70c678d6d52bcfd1af4b39f6bef701e9e84e7",
+          "head_sha": "40b70c678d6d52bcfd1af4b39f6bef701e9e84e7",
+          "url": "https://github.com/StatXzy7/worktree-import-guard/actions/runs/34485447492/job/102898712382",
+          "log": "ci-34485447492/job-102898712382.log",
+          "plugins": {}
+        }
+      ],
+      "uploaded_artifacts": [
+        {
+          "id": 10155420544,
+          "node_id": "MDg6QXJ0aWZhY3QxMDE1NTQyMDU0NA==",
+          "name": "distributions",
+          "size_in_bytes": 66129,
+          "url": "https://api.github.com/repos/StatXzy7/worktree-import-guard/actions/artifacts/10155420544",
+          "archive_download_url": "https://api.github.com/repos/StatXzy7/worktree-import-guard/actions/artifacts/10155420544/zip",
+          "expired": false,
+          "digest": "sha256:a02c3f0f3120fb86a4dd6f7f7877641e47a0e6e349ce48c9e9dcb33481144292",
+          "created_at": "2026-09-10T13:53:52Z",
+          "updated_at": "2026-09-10T13:53:52Z",
+          "expires_at": "2026-12-09T13:53:09Z",
+          "workflow_run": {
+            "id": 34485447492,
+            "repository_id": 1363662454,
+            "head_repository_id": 1363662454,
+            "head_branch": "codex/b0-release-candidate",
+            "head_sha": "40b70c678d6d52bcfd1af4b39f6bef701e9e84e7"
+          }
+        }
+      ]
+    },
+    {
+      "run_id": 34485453330,
+      "run_attempt": 1,
+      "event": "pull_request",
+      "workflow_path": ".github/workflows/ci.yml",
+      "url": "https://github.com/StatXzy7/worktree-import-guard/actions/runs/34485453330",
+      "result": "success",
+      "jobs": [
+        {
+          "job_id": 102898637256,
+          "name": "Quality and distributions",
+          "result": "success",
+          "platform": "ubuntu-latest",
+          "python": "3.13.15",
+          "pytest": "9.1.1",
+          "checkout_sha": "ab650e1eec375fcc523d3dd9c8e60e0dc8fafbbd",
+          "workflow_sha": "ab650e1eec375fcc523d3dd9c8e60e0dc8fafbbd",
+          "head_sha": "40b70c678d6d52bcfd1af4b39f6bef701e9e84e7",
+          "url": "https://github.com/StatXzy7/worktree-import-guard/actions/runs/34485453330/job/102898637256",
+          "log": "ci-34485453330/job-102898637256.log",
+          "plugins": {
+            "pytest-cov": "7.1.0",
+            "pytest-asyncio": "1.3.0",
+            "pytest-xdist": "3.8.0"
+          }
+        },
+        {
+          "job_id": 102898637497,
+          "name": "ubuntu-latest / Python 3.13",
+          "result": "success",
+          "platform": "ubuntu-latest",
+          "python": "3.13.15",
+          "pytest": "9.1.1",
+          "checkout_sha": "ab650e1eec375fcc523d3dd9c8e60e0dc8fafbbd",
+          "workflow_sha": "ab650e1eec375fcc523d3dd9c8e60e0dc8fafbbd",
+          "head_sha": "40b70c678d6d52bcfd1af4b39f6bef701e9e84e7",
+          "url": "https://github.com/StatXzy7/worktree-import-guard/actions/runs/34485453330/job/102898637497",
+          "log": "ci-34485453330/job-102898637497.log",
+          "plugins": {
+            "pytest-cov": "7.1.0",
+            "pytest-asyncio": "1.3.0",
+            "pytest-xdist": "3.8.0"
+          }
+        },
+        {
+          "job_id": 102898637536,
+          "name": "windows-latest / Python 3.13",
+          "result": "success",
+          "platform": "windows-latest",
+          "python": "3.13.15",
+          "pytest": "9.1.1",
+          "checkout_sha": "ab650e1eec375fcc523d3dd9c8e60e0dc8fafbbd",
+          "workflow_sha": "ab650e1eec375fcc523d3dd9c8e60e0dc8fafbbd",
+          "head_sha": "40b70c678d6d52bcfd1af4b39f6bef701e9e84e7",
+          "url": "https://github.com/StatXzy7/worktree-import-guard/actions/runs/34485453330/job/102898637536",
+          "log": "ci-34485453330/job-102898637536.log",
+          "plugins": {
+            "pytest-cov": "7.1.0",
+            "pytest-asyncio": "1.3.0",
+            "pytest-xdist": "3.8.0"
+          }
+        },
+        {
+          "job_id": 102898637570,
+          "name": "ubuntu-latest / Python 3.11",
+          "result": "success",
+          "platform": "ubuntu-latest",
+          "python": "3.11.16",
+          "pytest": "9.1.1",
+          "checkout_sha": "ab650e1eec375fcc523d3dd9c8e60e0dc8fafbbd",
+          "workflow_sha": "ab650e1eec375fcc523d3dd9c8e60e0dc8fafbbd",
+          "head_sha": "40b70c678d6d52bcfd1af4b39f6bef701e9e84e7",
+          "url": "https://github.com/StatXzy7/worktree-import-guard/actions/runs/34485453330/job/102898637570",
+          "log": "ci-34485453330/job-102898637570.log",
+          "plugins": {
+            "pytest-cov": "7.1.0",
+            "pytest-asyncio": "1.3.0",
+            "pytest-xdist": "3.8.0"
+          }
+        },
+        {
+          "job_id": 102898637607,
+          "name": "ubuntu-latest / Python 3.12",
+          "result": "success",
+          "platform": "ubuntu-latest",
+          "python": "3.12.14",
+          "pytest": "9.1.1",
+          "checkout_sha": "ab650e1eec375fcc523d3dd9c8e60e0dc8fafbbd",
+          "workflow_sha": "ab650e1eec375fcc523d3dd9c8e60e0dc8fafbbd",
+          "head_sha": "40b70c678d6d52bcfd1af4b39f6bef701e9e84e7",
+          "url": "https://github.com/StatXzy7/worktree-import-guard/actions/runs/34485453330/job/102898637607",
+          "log": "ci-34485453330/job-102898637607.log",
+          "plugins": {
+            "pytest-cov": "7.1.0",
+            "pytest-asyncio": "1.3.0",
+            "pytest-xdist": "3.8.0"
+          }
+        },
+        {
+          "job_id": 102898637791,
+          "name": "ubuntu-latest / Python 3.10",
+          "result": "success",
+          "platform": "ubuntu-latest",
+          "python": "3.10.21",
+          "pytest": "8.2.0",
+          "checkout_sha": "ab650e1eec375fcc523d3dd9c8e60e0dc8fafbbd",
+          "workflow_sha": "ab650e1eec375fcc523d3dd9c8e60e0dc8fafbbd",
+          "head_sha": "40b70c678d6d52bcfd1af4b39f6bef701e9e84e7",
+          "url": "https://github.com/StatXzy7/worktree-import-guard/actions/runs/34485453330/job/102898637791",
+          "log": "ci-34485453330/job-102898637791.log",
+          "plugins": {
+            "pytest-cov": "7.1.0",
+            "pytest-asyncio": "1.3.0",
+            "pytest-xdist": "3.8.0"
+          }
+        },
+        {
+          "job_id": 102898637912,
+          "name": "macos-latest / Python 3.13",
+          "result": "success",
+          "platform": "macos-latest",
+          "python": "3.13.15",
+          "pytest": "9.1.1",
+          "checkout_sha": "ab650e1eec375fcc523d3dd9c8e60e0dc8fafbbd",
+          "workflow_sha": "ab650e1eec375fcc523d3dd9c8e60e0dc8fafbbd",
+          "head_sha": "40b70c678d6d52bcfd1af4b39f6bef701e9e84e7",
+          "url": "https://github.com/StatXzy7/worktree-import-guard/actions/runs/34485453330/job/102898637912",
+          "log": "ci-34485453330/job-102898637912.log",
+          "plugins": {
+            "pytest-cov": "7.1.0",
+            "pytest-asyncio": "1.3.0",
+            "pytest-xdist": "3.8.0"
+          }
+        },
+        {
+          "job_id": 102898874161,
+          "name": "Installed wheel, sdist, and worktrees",
+          "result": "success",
+          "platform": "ubuntu-latest",
+          "python": "3.13.15",
+          "pytest": "9.1.1",
+          "checkout_sha": "ab650e1eec375fcc523d3dd9c8e60e0dc8fafbbd",
+          "workflow_sha": "ab650e1eec375fcc523d3dd9c8e60e0dc8fafbbd",
+          "head_sha": "40b70c678d6d52bcfd1af4b39f6bef701e9e84e7",
+          "url": "https://github.com/StatXzy7/worktree-import-guard/actions/runs/34485453330/job/102898874161",
+          "log": "ci-34485453330/job-102898874161.log",
+          "plugins": {}
+        }
+      ],
+      "uploaded_artifacts": [
+        {
+          "id": 10155441512,
+          "node_id": "MDg6QXJ0aWZhY3QxMDE1NTQ0MTUxMg==",
+          "name": "distributions",
+          "size_in_bytes": 66129,
+          "url": "https://api.github.com/repos/StatXzy7/worktree-import-guard/actions/artifacts/10155441512",
+          "archive_download_url": "https://api.github.com/repos/StatXzy7/worktree-import-guard/actions/artifacts/10155441512/zip",
+          "expired": false,
+          "digest": "sha256:f663eaa586eecb1396eba558616cdf521ea34bb6fead3beafcb69a0851c2afc3",
+          "created_at": "2026-09-10T13:54:20Z",
+          "updated_at": "2026-09-10T13:54:20Z",
+          "expires_at": "2026-12-09T13:53:12Z",
+          "workflow_run": {
+            "id": 34485453330,
+            "repository_id": 1363662454,
+            "head_repository_id": 1363662454,
+            "head_branch": "codex/b0-release-candidate",
+            "head_sha": "40b70c678d6d52bcfd1af4b39f6bef701e9e84e7"
+          }
+        }
+      ]
+    }
+  ],
+  "checks": {
+    "downloaded_ci_wheel_windows_install": "pass: 1 passed, 0 skipped on Python 3.13.5; JUnit included in evidence archive",
+    "local_quality": "pass",
+    "local_coverage": "92.42%",
+    "remote_quality": "pass",
+    "remote_coverage": "92.42%",
+    "regular_pytest": "46 passed; 1 intentional opt-in artifact skip",
+    "explicit_artifact": "1 passed; 0 skipped in each CI run",
+    "sdist_rebuild_install": "pass; derived wheel hash matches frozen wheel",
+    "hero_demo": "pass in both CI runs using downloaded wheel",
+    "plugins": "pytest-cov 7.1.0, pytest-asyncio 1.3.0, pytest-xdist 3.8.0",
+    "native_pytest_exit_6": "verified on pytest 9.1.1; not invoked on pytest 8.2.0",
+    "schema_v2": "golden and integration tests pass"
+  },
+  "evidence_archive": {
+    "path": "docs/release-readiness/evidence/b0-ci-evidence.zip",
+    "sha256": "6fb509cc5af9d40b4b1fede6e19443502852b3a2d2686ed254250ba5cce706ad"
+  },
+  "scope": {
+    "current_process_only": true,
+    "xdist_active": "unsupported and rejected",
+    "xdist_inactive_and_n0": "verified",
+    "child_process_imports": "not observed",
+    "unverified": [
+      "Other OS/Python combinations beyond six recorded matrix entries",
+      "Plugins beyond the recorded smokes",
+      "Python 3.14",
+      "An eventual merged commit and public package installation"
+    ]
+  },
+  "authorization": {
+    "push_and_pr": true,
+    "merged": false,
+    "release": false,
+    "tag": false,
+    "pypi": false,
+    "testpypi": false,
+    "permissions_changed": false
+  },
+  "release_rule": "Approve and publish only the frozen files, not a later unverified rebuild."
+}

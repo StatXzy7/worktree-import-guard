@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import json
-import shutil
 import subprocess
 import sys
+import sysconfig
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -24,27 +24,22 @@ def project_root() -> Path:
 
 @pytest.fixture(scope="session")
 def guard_command() -> list[str]:
-    sibling = Path(sys.executable).with_name(
+    sibling = Path(sysconfig.get_path("scripts")) / (
         "wt-import.exe" if sys.platform == "win32" else "wt-import"
     )
     if sibling.is_file():
         return [str(sibling)]
-    executable = shutil.which("wt-import")
-    if executable is not None:
-        return [executable]
-    launcher = "from worktree_import_guard.cli import main; raise SystemExit(main())"
-    return [sys.executable, "-c", launcher]
+    pytest.fail(f"the wt-import console script for {sys.executable} is required at {sibling}")
 
 
 @pytest.fixture(scope="session")
 def test_runner_command() -> list[str]:
-    sibling = Path(sys.executable).with_name("pytest.exe" if sys.platform == "win32" else "pytest")
+    sibling = Path(sysconfig.get_path("scripts")) / (
+        "pytest.exe" if sys.platform == "win32" else "pytest"
+    )
     if sibling.is_file():
         return [str(sibling)]
-    executable = shutil.which("pytest")
-    if executable is None:
-        pytest.fail("the pytest console script is required for integration tests")
-    return [executable]
+    pytest.fail(f"the pytest console script for {sys.executable} is required at {sibling}")
 
 
 @pytest.fixture

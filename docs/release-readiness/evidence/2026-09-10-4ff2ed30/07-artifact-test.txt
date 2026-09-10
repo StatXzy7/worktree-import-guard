@@ -1,0 +1,8 @@
+COMMAND=WTIG_RUN_ARTIFACT_TESTS=1 WTIG_ARTIFACT_WHEEL=D:\worktree-import-guard\dist\b0-4ff2ed30652f70b4ee1e115e6626ad63ced7166a\worktree_import_guard-0.1.0-py3-none-any.whl .venv\\Scripts\\pytest.exe tests/artifact -q -rA --basetemp D:\temp\wtig-b0-4ff2ed30-artifact-pytest
+CWD=D:\worktree-import-guard
+.                                                                        [100%]
+=================================== PASSES ====================================
+=========================== short test summary info ===========================
+PASSED tests/artifact/test_installed_worktrees.py::test_wheel_console_scripts_pth_and_pep660_across_worktrees
+1 passed in 32.99s
+EXIT_CODE=0

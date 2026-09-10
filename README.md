@@ -2,121 +2,141 @@
 
 > Catch Python tests that pass against the wrong Git worktree.
 
-```text
-$ pytest -q
-47 passed
+You changed code in one checkout, but Python may still import your package from another.
+This tool checks where selected packages were actually loaded from during pytest.
 
-$ wt-import --expect acme=src/acme -- -q
-expected: /repo/feature/src/acme
-observed: /repo/main/src/acme/core.py
+[简体中文](https://github.com/StatXzy7/worktree-import-guard/blob/main/README.zh-CN.md)
+
+This real [demo](https://github.com/StatXzy7/worktree-import-guard/blob/main/examples/cross-worktree-demo/README.md) has **one test**: ordinary pytest
+passes even when the editable install points to the wrong worktree. Excerpt from the B1 Windows demo;
+temporary path prefix replaced by `<demo>` (additional module details omitted):
+
+```text
+1 passed in 0.03s
+
+Tests passed.
+WORKTREE IMPORT GUARD: FAIL
+expected: <demo>\feature worktree\src\demo_pkg
+observed: <demo>\main repository\src\demo_pkg\core.py (demo_pkg.core)
 reason:   CROSS_WORKTREE_IMPORT
+next:     Code was loaded from another worktree. Check the Python environment and the editable install used by this test run.
+
+pytest exit: 0
+guard:      FAIL
 ```
 
-`worktree-import-guard` checks runtime provenance for explicitly selected Python packages during
-one pytest process. It is aimed at the subtle case where tests pass, but imports came from an
-editable install, stale environment entry, or another checkout instead of the worktree under test.
+## Install once, then check your project
 
-## Install and use
+**0.1.0 is a release candidate, not a published PyPI release.** For early access, obtain the
+candidate `worktree_import_guard-0.1.0-py3-none-any.whl` from the maintainer. There is no public
+B1 download yet. You do not need to clone this tool, install dev extras, or build it yourself.
 
-Install the command into the Python environment whose pytest run you want to inspect:
+Run from **your project's root directory**, in the environment where its pytest already works.
+Below, `.venv` is an example of that **existing** environment, not a directory the tool creates.
+Replace it with your actual environment path and replace the wheel path with the file you received.
+Do not create a new environment or reinstall your project just to diagnose it.
 
-```console
-python -m pip install worktree-import-guard
-.venv/bin/wt-import --expect acme=src/acme -- -q
+Linux / macOS:
+
+```sh
+".venv/bin/python" -m pip install "/path/to/worktree_import_guard-0.1.0-py3-none-any.whl"
+".venv/bin/wt-import" --expect demo_pkg=src/demo_pkg -- -q
 ```
 
-On Windows, the executable is normally `.venv\Scripts\wt-import.exe`. With `uv`, use:
+Windows PowerShell (no activation or execution-policy change needed):
 
-```console
-uv run wt-import --expect acme=src/acme -- -q
+```powershell
+& ".venv\Scripts\python.exe" -m pip install "C:\path to\worktree_import_guard-0.1.0-py3-none-any.whl"
+& ".venv\Scripts\wt-import.exe" --expect demo_pkg=src/demo_pkg -- -q
 ```
 
-The command deliberately has no `--python` option. The environment is selected by the
-`wt-import` executable you invoke. It calls `pytest.main(...)` in that process and neither changes
-`PYTHONPATH` nor inserts an expected source directory into `sys.path`.
+Use your package's import name and directory in place of `demo_pkg=src/demo_pkg`.
+The Python and `wt-import` paths must belong to the **same environment**. Quote executable paths
+and whole arguments containing spaces, e.g. `--expect "demo_pkg=source tree/demo_pkg"`.
+Installation can install or adjust dependencies (including pytest). The check itself does not
+repair installs or change import paths; your tests still execute and may have side effects.
 
-Declare more than one package by repeating the option. Dotted packages are supported:
+For an incident, if the tool is already installed, run **only the check command** first. Do not
+sync or reinstall the target project before inspecting it. For routine development, follow your
+project's dependency setup first. [uv and missing-command help](https://github.com/StatXzy7/worktree-import-guard/blob/main/docs/troubleshooting.md).
+`pipx`, `uvx` and `uv tool install` use separate tool environments and are not the recommended
+way to inspect your existing pytest environment.
 
-```console
-wt-import \
-  --expect acme=src/acme \
-  --expect shared.api=packages/shared/src/shared/api \
-  -- tests/unit -q
+The [release notes draft](https://github.com/StatXzy7/worktree-import-guard/blob/main/docs/releasing/0.1.0-notes.md) contains the shorter PyPI install command
+for activation **after publication**. Candidate installation is not a PyPI download test.
 
-wt-import -C backend --expect service=src/service -- -q
-```
+## What goes in --expect?
 
-Relative expected paths are resolved from the pytest working directory (`--cwd`, or the current
-directory by default).
-
-## Results
-
-Each target is `pass`, `fail`, or `unknown`:
-
-- `pass`: every concrete observed origin is within the canonical expected package directory.
-- `fail`: at least one concrete observed origin is outside it.
-- `unknown`: the target was not observed, or its origin could not be resolved safely.
-
-Unknown never means pass. If pytest succeeds, guard pass/fail/unknown produce process exits 0/1/2.
-An ordinary pytest test failure remains exit 1. Native pytest exits 2, 3, 4, and 5 are preserved.
-
-Use `--show-all` to include matching origins in human output. Use `--report-json PATH` for the
-stable schema-versioned report:
-
-```console
-wt-import --expect acme=src/acme --report-json provenance.json -- -q
-```
-
-Git context is best effort. When the expected and wrong origins belong to different worktrees in
-the same `git worktree list --porcelain -z` result, the reason is `CROSS_WORKTREE_IMPORT`.
-Otherwise it is `OUTSIDE_EXPECTED_ROOT`. Use `--no-git-context` to skip Git discovery entirely.
-
-Public V0.1 reason codes are:
+For a **src layout**:
 
 ```text
-MATCH
-CROSS_WORKTREE_IMPORT
-OUTSIDE_EXPECTED_ROOT
-MIXED_ORIGINS
-TARGET_NOT_OBSERVED
-ORIGIN_UNRESOLVED
-ORIGIN_METADATA_CONFLICT
-NON_FILESYSTEM_ORIGIN
-UNSUPPORTED_NAMESPACE_LAYOUT
-UNSUPPORTED_RUNTIME
+project/
+  src/
+    demo_pkg/
+      __init__.py
+  tests/
 ```
 
-## What is observed
+Use `--expect demo_pkg=src/demo_pkg`.
 
-The command installs observation before lazily importing pytest. It combines CPython audit import
-events with retained `sys.modules` snapshots at import returns and pytest lifecycle boundaries.
-For each selected package and loaded submodule, it evaluates `__spec__.origin`, `__file__`, and
-namespace search locations. Canonical path operations handle dot segments, symlinks, Windows case
-normalization, separators, spaces, and component boundaries; string-prefix containment is never
-used.
+For a **flat layout**:
 
-For a one-off incident, manually checking `package.__file__` is a valid solution. The value of
-this tool is making the check repeatable, covering selected submodules, producing deterministic
-exit codes and JSON, and allowing it to be retained in a test, CI, or coding-agent workflow.
+```text
+project/
+  demo_pkg/
+    __init__.py
+  tests/
+```
 
-## Scope and trust
+Use `--expect demo_pkg=demo_pkg`.
 
-V0.1 observes only the current, single pytest process.
+The left side is the name in `import demo_pkg`; it may differ from the name used by pip.
+The right side is the source **package directory** you want these tests to load. Do not use just
+the repository root or point it at another worktree. Repeat `--expect` for multiple packages,
+e.g. `--expect demo_pkg=src/demo_pkg --expect shared.api=lib/shared/api`.
 
-- Complete pytest-xdist tracing is not supported. An active distributed run is rejected rather
-  than reported as a trustworthy pass.
-- Imports that occur only in child processes are not covered.
-- Namespace packages with more than one search root are reported unknown.
-- This is runtime diagnostic instrumentation, not environment prediction or repair.
-- It does not create environments, repair editable installs, or mutate import paths.
-- It is not a sandbox, and audit hooks are not tamper-proof security evidence.
+Relative expected paths start in the pytest working directory. From a parent directory,
+`--cwd backend --expect demo_pkg=src/demo_pkg` expects `backend/src/demo_pkg` and runs pytest in
+`backend`. If the executable is also inside backend, invoke `"backend/.venv/bin/wt-import"` (or
+`& "backend\.venv\Scripts\wt-import.exe"` in PowerShell). Executable paths are still relative
+to the shell's current directory. Relative `--report-json` paths start in the original invocation
+directory, even with `--cwd`.
 
-Pytest executes arbitrary repository code. Use this tool only for trusted or authorized test
-execution; hostile code in the same process can interfere with diagnostics.
+No `__init__.py`? Read the [namespace limits](https://github.com/StatXzy7/worktree-import-guard/blob/main/docs/runtime-scope.md#namespace-packages).
 
-## Development
+## Read the result
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). The real-worktree integration test constructs a temporary
-main and feature worktree, deliberately resolves `demo_pkg` to main while running in feature, and
-proves that ordinary pytest passes while the guard reports `CROSS_WORKTREE_IMPORT`.
+| Result | Meaning | Next step |
+| --- | --- | --- |
+| PASS | Observed sources for your selected packages match the requested directories. | Check pytest's separate result; this does not prove test coverage. |
+| FAIL | Observed code came from outside a requested directory. | Compare `expected` and `observed`; inspect the selected environment and editable install. |
+| UNKNOWN | This source check could not be completed. | Read `reason` and `next`: the target may be unobserved, metadata unresolved, or execution unsupported. |
 
+UNKNOWN is never a pass. The report shows each selected package and its expected directory.
+`--show-all` also shows matching modules. `--report-json provenance.json` saves detailed evidence;
+use an existing writable directory and redact paths before sharing it.
+
+If pytest fails but the guard says PASS, **the tests failed and the observed sources matched**.
+All native nonzero pytest exits are preserved, including exit 6 where pytest supports it.
+When pytest exits 0, guard PASS / FAIL / UNKNOWN exit 0 / 1 / 2. A JSON write failure exits 2
+when pytest succeeded, otherwise preserving pytest's nonzero exit.
+
+## Common questions and limits
+
+- Only explicitly selected packages, their observed submodules, and this supported pytest process
+  are checked. Unexecuted code and child-process-only imports are not verified.
+- Active pytest-xdist is unsupported; run one process (`-n 0` when xdist is installed).
+- A mismatch is called “another worktree” only when Git confirms the relationship.
+- This does not prove coverage, code equality to a commit, or complete environment isolation.
+- It does not fix your environment and is not a sandbox. Run tests you trust or are authorized to run.
+
+See [troubleshooting](https://github.com/StatXzy7/worktree-import-guard/blob/main/docs/troubleshooting.md) for missing commands, arguments, UNKNOWN and JSON errors.
+Want to see it before checking your own code? The [disposable demo](https://github.com/StatXzy7/worktree-import-guard/blob/main/examples/cross-worktree-demo/README.md)
+creates its own two worktrees and environment and checks all three expected outcomes.
+
+## Details and contributing
+
+[Runtime scope](https://github.com/StatXzy7/worktree-import-guard/blob/main/docs/runtime-scope.md) · [JSON schema v2](https://github.com/StatXzy7/worktree-import-guard/blob/main/docs/json-schema-v2.md) ·
+[Contributing](https://github.com/StatXzy7/worktree-import-guard/blob/main/CONTRIBUTING.md) · [Security](https://github.com/StatXzy7/worktree-import-guard/blob/main/SECURITY.md) · [Changelog](https://github.com/StatXzy7/worktree-import-guard/blob/main/CHANGELOG.md) ·
+[Release checklist](https://github.com/StatXzy7/worktree-import-guard/blob/main/docs/releasing/README.md) · [Historical B0 evidence](https://github.com/StatXzy7/worktree-import-guard/blob/main/docs/release-readiness/b0-readiness.md) ·
+[Benchmarks](https://github.com/StatXzy7/worktree-import-guard/blob/main/benchmarks/README.md)

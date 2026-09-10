@@ -1,0 +1,4 @@
+COMMAND=.venv\\Scripts\\ruff.exe check .
+CWD=D:\worktree-import-guard
+All checks passed!
+EXIT_CODE=0

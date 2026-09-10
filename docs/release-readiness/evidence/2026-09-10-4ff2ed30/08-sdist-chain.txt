@@ -1,0 +1,45 @@
+COMMAND=pip wheel sdist outside repository; install derived wheel in clean venv; run installed console script
+CWD=D:\temp\wtig-b0-4ff2ed30-sdist-chain\outside-repository
+SOURCE_SDIST=D:\worktree-import-guard\dist\b0-4ff2ed30652f70b4ee1e115e6626ad63ced7166a\worktree_import_guard-0.1.0.tar.gz
+Processing .\dist\b0-4ff2ed30652f70b4ee1e115e6626ad63ced7166a\worktree_import_guard-0.1.0.tar.gz
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Getting requirements to build wheel: started
+  Getting requirements to build wheel: finished with status 'done'
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Building wheels for collected packages: worktree-import-guard
+  Building wheel for worktree-import-guard (pyproject.toml): started
+  Building wheel for worktree-import-guard (pyproject.toml): finished with status 'done'
+  Created wheel for worktree-import-guard: filename=worktree_import_guard-0.1.0-py3-none-any.whl size=20761 sha256=48f8b457a84f4fcfaa01f66e757ee6da8fee2088e078b4b425cabdb98681f240
+  Stored in directory: d:\dev-cache\pip\wheels\61\d3\6a\367bcd2851cea1dff1460f44d2642246e5931ddd103941ad21
+Successfully built worktree-import-guard
+DERIVED_WHEEL=D:\temp\wtig-b0-4ff2ed30-sdist-chain\wheelhouse\worktree_import_guard-0.1.0-py3-none-any.whl
+DERIVED_WHEEL_BYTES=20761
+DERIVED_WHEEL_SHA256=48f8b457a84f4fcfaa01f66e757ee6da8fee2088e078b4b425cabdb98681f240
+Processing d:\temp\wtig-b0-4ff2ed30-sdist-chain\wheelhouse\worktree_import_guard-0.1.0-py3-none-any.whl
+Collecting pytest<10,>=8.2 (from worktree-import-guard==0.1.0)
+  Using cached pytest-9.1.1-py3-none-any.whl.metadata (7.6 kB)
+Collecting colorama>=0.4 (from pytest<10,>=8.2->worktree-import-guard==0.1.0)
+  Using cached colorama-0.4.6-py2.py3-none-any.whl.metadata (17 kB)
+Collecting iniconfig>=1.0.1 (from pytest<10,>=8.2->worktree-import-guard==0.1.0)
+  Using cached iniconfig-2.3.0-py3-none-any.whl.metadata (2.5 kB)
+Collecting packaging>=22 (from pytest<10,>=8.2->worktree-import-guard==0.1.0)
+  Using cached packaging-26.3-py3-none-any.whl.metadata (3.5 kB)
+Collecting pluggy<2,>=1.5 (from pytest<10,>=8.2->worktree-import-guard==0.1.0)
+  Using cached pluggy-1.6.0-py3-none-any.whl.metadata (4.8 kB)
+Collecting pygments>=2.7.2 (from pytest<10,>=8.2->worktree-import-guard==0.1.0)
+  Using cached pygments-2.21.0-py3-none-any.whl.metadata (2.5 kB)
+Using cached pytest-9.1.1-py3-none-any.whl (386 kB)
+Using cached pluggy-1.6.0-py3-none-any.whl (20 kB)
+Using cached colorama-0.4.6-py2.py3-none-any.whl (25 kB)
+Using cached iniconfig-2.3.0-py3-none-any.whl (7.5 kB)
+Using cached packaging-26.3-py3-none-any.whl (129 kB)
+Using cached pygments-2.21.0-py3-none-any.whl (1.3 MB)
+Installing collected packages: pygments, pluggy, packaging, iniconfig, colorama, pytest, worktree-import-guard
+
+Successfully installed colorama-0.4.6 iniconfig-2.3.0 packaging-26.3 pluggy-1.6.0 pygments-2.21.0 pytest-9.1.1 worktree-import-guard-0.1.0
+wt-import 0.1.0
+sys.executable=D:\temp\wtig-b0-4ff2ed30-sdist-chain\venv\Scripts\python.exe
+package=D:\temp\wtig-b0-4ff2ed30-sdist-chain\venv\Lib\site-packages\worktree_import_guard\__init__.py
+EXIT_CODE=0

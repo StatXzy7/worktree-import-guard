@@ -1,0 +1,10 @@
+COMMAND=git status; branch; ahead count; remote branch collision check
+CWD=D:\worktree-import-guard
+## codex/b0-release-candidate
+0	2
+4ff2ed3 Keep minimum pytest compatibility resolvable
+a0935cf Harden provenance checks and freeze B0 candidate
+REMOTE_BRANCH_COLLISION=none
+SUGGESTED_PUSH=git push --set-upstream origin codex/b0-release-candidate
+SUGGESTED_PR=gh pr create --repo StatXzy7/worktree-import-guard --base main --head codex/b0-release-candidate --title 'Harden provenance checks and freeze B0 candidate'
+EXIT_CODE=0

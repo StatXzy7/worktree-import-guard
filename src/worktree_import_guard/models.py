@@ -28,6 +28,7 @@ class ReasonCode(str, Enum):
     NON_FILESYSTEM_ORIGIN = "NON_FILESYSTEM_ORIGIN"
     UNSUPPORTED_NAMESPACE_LAYOUT = "UNSUPPORTED_NAMESPACE_LAYOUT"
     UNSUPPORTED_RUNTIME = "UNSUPPORTED_RUNTIME"
+    OBSERVATION_ERROR = "OBSERVATION_ERROR"
 
 
 @dataclass(frozen=True)
@@ -49,6 +50,11 @@ class ObservedModule:
     search_locations: tuple[str, ...]
     phase: str
     source: str
+    capture_cwd: str | None = None
+    canonical_spec_origin: str | None = None
+    canonical_file: str | None = None
+    canonical_search_locations: tuple[str, ...] = ()
+    paths_frozen: bool = False
 
 
 @dataclass(frozen=True)
@@ -105,6 +111,8 @@ class GuardResult:
     status: Status
     complete: bool
     targets: tuple[TargetResult, ...]
+    observation_complete: bool = True
+    observation_errors: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -118,4 +126,10 @@ class RunReport:
     guard: GuardResult
     git: GitContext
     xdist: bool = False
+    python_resolved: Path | None = None
+    sys_prefix: str | None = None
+    sys_base_prefix: str | None = None
+    python_version: str | None = None
+    pytest_version: str | None = None
+    metrics: dict[str, int | float] = field(default_factory=dict)
     metadata: dict[str, str] = field(default_factory=dict)
