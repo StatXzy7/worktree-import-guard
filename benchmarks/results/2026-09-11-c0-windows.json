@@ -1,0 +1,375 @@
+{
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python": "3.13.9",
+  "note": "Raw local samples; microbenchmark is not pytest speedup. Before=d9fa1c6; after=C0 work in progress. No module-table scans on cached unrelated imports.",
+  "before": {
+    "results": [
+      {
+        "module_count_requested": 1000,
+        "module_count_observed": 1120,
+        "iterations": 1000,
+        "repeats": 7,
+        "baseline_seconds": [
+          6.029999349266291e-05,
+          5.789997521787882e-05,
+          5.6800025049597025e-05,
+          5.6699966080486774e-05,
+          5.590001819655299e-05,
+          5.779997445642948e-05,
+          5.830003647133708e-05
+        ],
+        "baseline_median_seconds": 5.779997445642948e-05,
+        "guarded_seconds": [
+          0.0012266000267118216,
+          0.0006700000376440585,
+          0.000610699993558228,
+          0.000598000013269484,
+          0.0005966000026091933,
+          0.0005955000524409115,
+          0.0006005999748595059
+        ],
+        "guarded_median_seconds": 0.0006005999748595059,
+        "observer": {
+          "import_returns": 7000,
+          "incremental_captures": 0,
+          "full_snapshots": 1,
+          "observations": 0
+        }
+      },
+      {
+        "module_count_requested": 2000,
+        "module_count_observed": 2120,
+        "iterations": 1000,
+        "repeats": 7,
+        "baseline_seconds": [
+          5.1799986977130175e-05,
+          5.089998012408614e-05,
+          5.080003757029772e-05,
+          5.0799979362636805e-05,
+          5.339999916031957e-05,
+          5.0799979362636805e-05,
+          5.080003757029772e-05
+        ],
+        "baseline_median_seconds": 5.080003757029772e-05,
+        "guarded_seconds": [
+          0.0009313999908044934,
+          0.0006876999977976084,
+          0.0006206000107340515,
+          0.0006033999961800873,
+          0.0006474999827332795,
+          0.0006058000144548714,
+          0.0006210999563336372
+        ],
+        "guarded_median_seconds": 0.0006210999563336372,
+        "observer": {
+          "import_returns": 7000,
+          "incremental_captures": 0,
+          "full_snapshots": 1,
+          "observations": 0
+        }
+      },
+      {
+        "module_count_requested": 4000,
+        "module_count_observed": 4120,
+        "iterations": 1000,
+        "repeats": 7,
+        "baseline_seconds": [
+          5.229999078437686e-05,
+          5.129998316988349e-05,
+          5.140004213899374e-05,
+          5.119998240843415e-05,
+          5.1099981646984816e-05,
+          5.13000413775444e-05,
+          5.129998316988349e-05
+        ],
+        "baseline_median_seconds": 5.129998316988349e-05,
+        "guarded_seconds": [
+          0.000980100012384355,
+          0.0006417999975383282,
+          0.000611600000411272,
+          0.0006151000270619988,
+          0.0006141999620012939,
+          0.0006131000118330121,
+          0.0008015999919734895
+        ],
+        "guarded_median_seconds": 0.0006151000270619988,
+        "observer": {
+          "import_returns": 7000,
+          "incremental_captures": 0,
+          "full_snapshots": 1,
+          "observations": 0
+        }
+      }
+    ]
+  },
+  "after": {
+    "results": [
+      {
+        "module_count_requested": 1000,
+        "module_count_observed": 1120,
+        "iterations": 1000,
+        "repeats": 7,
+        "baseline_seconds": [
+          8.320005144923925e-05,
+          5.200004670768976e-05,
+          5.559995770454407e-05,
+          6.0999998822808266e-05,
+          5.000003147870302e-05,
+          4.989997250959277e-05,
+          8.949998300522566e-05
+        ],
+        "baseline_median_seconds": 5.559995770454407e-05,
+        "guarded_seconds": [
+          0.0006327000446617603,
+          0.000632000039331615,
+          0.0006211999570950866,
+          0.0007139000226743519,
+          0.0006273000035434961,
+          0.0006206000107340515,
+          0.0008010999881662428
+        ],
+        "guarded_median_seconds": 0.000632000039331615,
+        "observer": {
+          "import_returns": 7000,
+          "incremental_captures": 0,
+          "full_snapshots": 1,
+          "observations": 0
+        }
+      },
+      {
+        "module_count_requested": 2000,
+        "module_count_observed": 2120,
+        "iterations": 1000,
+        "repeats": 7,
+        "baseline_seconds": [
+          5.43000060133636e-05,
+          5.259999306872487e-05,
+          5.259999306872487e-05,
+          6.880000000819564e-05,
+          9.55999712459743e-05,
+          5.560001591220498e-05,
+          5.23999915458262e-05
+        ],
+        "baseline_median_seconds": 5.43000060133636e-05,
+        "guarded_seconds": [
+          0.0006576000014320016,
+          0.0006902999593876302,
+          0.0009157000458799303,
+          0.0006276000058278441,
+          0.0006225000252015889,
+          0.0006237999768927693,
+          0.0011884000268764794
+        ],
+        "guarded_median_seconds": 0.0006576000014320016,
+        "observer": {
+          "import_returns": 7000,
+          "incremental_captures": 0,
+          "full_snapshots": 1,
+          "observations": 0
+        }
+      },
+      {
+        "module_count_requested": 4000,
+        "module_count_observed": 4120,
+        "iterations": 1000,
+        "repeats": 7,
+        "baseline_seconds": [
+          5.579995922744274e-05,
+          5.4100004490464926e-05,
+          5.9100042562931776e-05,
+          5.390000296756625e-05,
+          5.389994475990534e-05,
+          7.800001185387373e-05,
+          0.00010559998918324709
+        ],
+        "baseline_median_seconds": 5.579995922744274e-05,
+        "guarded_seconds": [
+          0.0006754999631084502,
+          0.0006698000361211598,
+          0.0009199999622069299,
+          0.0008294000290334225,
+          0.000630799971986562,
+          0.0007451000274159014,
+          0.0009715999476611614
+        ],
+        "guarded_median_seconds": 0.0007451000274159014,
+        "observer": {
+          "import_returns": 7000,
+          "incremental_captures": 0,
+          "full_snapshots": 1,
+          "observations": 0
+        }
+      }
+    ]
+  },
+  "pytest": {
+    "results": [
+      {
+        "suite": "small",
+        "test_files": 10,
+        "repeats": 3,
+        "standard": {
+          "wall_median_seconds": 0.4590719999978319,
+          "wall_range_seconds": [
+            0.43141879996983334,
+            0.5102105000405572
+          ],
+          "collection_median_seconds": 0.054175600002054125,
+          "collection_range_seconds": [
+            0.0522231999784708,
+            0.09540380001999438
+          ],
+          "samples": [
+            {
+              "wall_seconds": 0.5102105000405572,
+              "collection_seconds": 0.09540380001999438
+            },
+            {
+              "wall_seconds": 0.4590719999978319,
+              "collection_seconds": 0.054175600002054125
+            },
+            {
+              "wall_seconds": 0.43141879996983334,
+              "collection_seconds": 0.0522231999784708
+            }
+          ]
+        },
+        "guarded": {
+          "wall_median_seconds": 0.5408041999908164,
+          "wall_range_seconds": [
+            0.45279850001679733,
+            0.5623047999688424
+          ],
+          "collection_median_seconds": 0.06632100004935637,
+          "collection_range_seconds": [
+            0.06382380001014099,
+            0.07433859998127446
+          ],
+          "samples": [
+            {
+              "wall_seconds": 0.5623047999688424,
+              "collection_seconds": 0.06632100004935637,
+              "guard_metrics": {
+                "full_snapshots": 7,
+                "guarded_wall_seconds": 0.363669199985452,
+                "import_returns": 4913,
+                "incremental_captures": 11,
+                "observations": 1,
+                "pytest_collection_seconds": 0.06703330000163987
+              }
+            },
+            {
+              "wall_seconds": 0.5408041999908164,
+              "collection_seconds": 0.07433859998127446,
+              "guard_metrics": {
+                "full_snapshots": 7,
+                "guarded_wall_seconds": 0.34569420001935214,
+                "import_returns": 4913,
+                "incremental_captures": 11,
+                "observations": 1,
+                "pytest_collection_seconds": 0.07514269999228418
+              }
+            },
+            {
+              "wall_seconds": 0.45279850001679733,
+              "collection_seconds": 0.06382380001014099,
+              "guard_metrics": {
+                "full_snapshots": 7,
+                "guarded_wall_seconds": 0.28040629997849464,
+                "import_returns": 4913,
+                "incremental_captures": 11,
+                "observations": 1,
+                "pytest_collection_seconds": 0.06455810001352802
+              }
+            }
+          ]
+        },
+        "wall_overhead_seconds": 0.08173219999298453,
+        "wall_overhead_ratio": 0.1780378676838721
+      },
+      {
+        "suite": "medium",
+        "test_files": 100,
+        "repeats": 3,
+        "standard": {
+          "wall_median_seconds": 1.0050906999967992,
+          "wall_range_seconds": [
+            0.7963702999986708,
+            1.0098834999953397
+          ],
+          "collection_median_seconds": 0.5472543999785557,
+          "collection_range_seconds": [
+            0.372058900014963,
+            0.6027941000065766
+          ],
+          "samples": [
+            {
+              "wall_seconds": 1.0050906999967992,
+              "collection_seconds": 0.6027941000065766
+            },
+            {
+              "wall_seconds": 0.7963702999986708,
+              "collection_seconds": 0.372058900014963
+            },
+            {
+              "wall_seconds": 1.0098834999953397,
+              "collection_seconds": 0.5472543999785557
+            }
+          ]
+        },
+        "guarded": {
+          "wall_median_seconds": 0.971914800000377,
+          "wall_range_seconds": [
+            0.8997459000092931,
+            1.0513838999904692
+          ],
+          "collection_median_seconds": 0.4562708999728784,
+          "collection_range_seconds": [
+            0.43889170000329614,
+            0.5215781999868341
+          ],
+          "samples": [
+            {
+              "wall_seconds": 0.8997459000092931,
+              "collection_seconds": 0.43889170000329614,
+              "guard_metrics": {
+                "full_snapshots": 7,
+                "guarded_wall_seconds": 0.7405017999699339,
+                "import_returns": 6623,
+                "incremental_captures": 101,
+                "observations": 1,
+                "pytest_collection_seconds": 0.4397486000088975
+              }
+            },
+            {
+              "wall_seconds": 0.971914800000377,
+              "collection_seconds": 0.4562708999728784,
+              "guard_metrics": {
+                "full_snapshots": 7,
+                "guarded_wall_seconds": 0.7895346999866888,
+                "import_returns": 6623,
+                "incremental_captures": 101,
+                "observations": 1,
+                "pytest_collection_seconds": 0.45702309999614954
+              }
+            },
+            {
+              "wall_seconds": 1.0513838999904692,
+              "collection_seconds": 0.5215781999868341,
+              "guard_metrics": {
+                "full_snapshots": 7,
+                "guarded_wall_seconds": 0.854125399957411,
+                "import_returns": 6623,
+                "incremental_captures": 101,
+                "observations": 1,
+                "pytest_collection_seconds": 0.5223356999922544
+              }
+            }
+          ]
+        },
+        "wall_overhead_seconds": -0.03317589999642223,
+        "wall_overhead_ratio": -0.03300786684876089
+      }
+    ]
+  }
+}

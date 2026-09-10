@@ -28,6 +28,7 @@ class ReasonCode(str, Enum):
     NON_FILESYSTEM_ORIGIN = "NON_FILESYSTEM_ORIGIN"
     UNSUPPORTED_NAMESPACE_LAYOUT = "UNSUPPORTED_NAMESPACE_LAYOUT"
     UNSUPPORTED_RUNTIME = "UNSUPPORTED_RUNTIME"
+    OBSERVATION_ERROR = "OBSERVATION_ERROR"
 
 
 @dataclass(frozen=True)
@@ -111,6 +112,7 @@ class GuardResult:
     complete: bool
     targets: tuple[TargetResult, ...]
     observation_complete: bool = True
+    observation_errors: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)

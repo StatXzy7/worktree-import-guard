@@ -96,6 +96,9 @@ def classify(
                 reasons = (ReasonCode.CROSS_WORKTREE_IMPORT,)
             else:
                 reasons = (ReasonCode.OUTSIDE_EXPECTED_ROOT,)
+        elif observer.observation_errors:
+            status = Status.UNKNOWN
+            reasons = (ReasonCode.OBSERVATION_ERROR,)
         elif observer.unsupported_reason is not None:
             status = Status.UNKNOWN
             reasons = (observer.unsupported_reason,)
@@ -130,13 +133,16 @@ def classify(
         overall = Status.PASS
     return GuardResult(
         status=overall,
-        complete=all(
+        complete=not observer.observation_errors and all(
             target.status is not Status.UNKNOWN
             and all(observation.issue is None for observation in target.observations)
             for target in targets
         ),
         targets=tuple(targets),
-        observation_complete=observer.unsupported_reason is None,
+        observation_complete=(
+            observer.unsupported_reason is None and not observer.observation_errors
+        ),
+        observation_errors=tuple(observer.observation_errors),
     )
 
 
@@ -182,6 +188,8 @@ def report_dict(report: RunReport) -> dict[str, object]:
             "status": report.guard.status.value,
             "complete": report.guard.complete,
             "observation_complete": report.guard.observation_complete,
+            **({"observation_errors": list(report.guard.observation_errors)}
+               if report.guard.observation_errors else {}),
         },
         "targets": [
             {
@@ -306,6 +314,10 @@ def render_human(report: RunReport, *, show_all: bool = False) -> str:
                 "This namespace layout cannot be verified. See the namespace limits in README."
             ),
             ReasonCode.MATCH: "Observed sources match the expected directory.",
+            ReasonCode.OBSERVATION_ERROR: (
+                "The observer encountered an internal error. See --report-json for the "
+                "capture phase and error type; report a reproducible example."
+            ),
         }
         for reason in target.reasons:
             lines.append(

@@ -181,6 +181,8 @@ def test_schema_v2_golden_reports() -> None:
         "pytest-usage-error": (Status.UNKNOWN, False, "TARGET_NOT_OBSERVED", 4),
         "pytest-no-tests": (Status.UNKNOWN, False, "TARGET_NOT_OBSERVED", 5),
         "observation-incomplete": (Status.UNKNOWN, False, "UNSUPPORTED_RUNTIME", 4),
+        "observation-error": (Status.UNKNOWN, False, "OBSERVATION_ERROR", 0),
+        "fail-observation-error": (Status.FAIL, False, "OUTSIDE_EXPECTED_ROOT", 1),
     }
     for name, (status, complete, reason, pytest_exit_code) in cases.items():
         target = TargetResult(
@@ -193,7 +195,12 @@ def test_schema_v2_golden_reports() -> None:
             status,
             complete,
             (target,),
-            observation_complete=name != "observation-incomplete",
+            observation_complete=name not in {
+                "observation-incomplete", "observation-error", "fail-observation-error"
+            },
+            observation_errors=(
+                ("import-return: OSError",) if name.endswith("observation-error") else ()
+            ),
         )
         report = RunReport(
             cwd=Path("cwd"),

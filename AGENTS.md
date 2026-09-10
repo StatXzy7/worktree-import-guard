@@ -6,6 +6,11 @@ Catch Python tests that pass after importing explicitly selected packages from t
 worktree. This is current-process runtime provenance checking, not environment management or a
 sandbox.
 
+Make first use understandable: suggest package directories statically, require confirmation
+before saving a contract or running setup tests, and distinguish test results from source results.
+Each user-facing addition should remove a concrete installation, selection, or repeat-use burden.
+Never hide UNKNOWN, infer PASS from a suggestion, or automatically repair a user's environment.
+
 ## Product principles
 
 - Help ordinary Python developers find which source their tests actually loaded.

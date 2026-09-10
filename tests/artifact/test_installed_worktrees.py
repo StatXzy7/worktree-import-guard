@@ -163,6 +163,17 @@ def test_wheel_console_scripts_pth_and_pep660_across_worktrees(
     wt_import = script(venv, "wt-import")
     env = clean_env()
 
+    # Execute audit regressions with the installed runtime, outside the checkout.
+    import shutil
+
+    regression_root = tmp_path / "wheel regressions"
+    shutil.copytree(project_root / "tests", regression_root / "tests")
+    regression = run(
+        [str(python), "-m", "pytest", "tests/integration/test_audit_regressions.py", "-q"],
+        cwd=regression_root, env=env,
+    )
+    assert "20 passed" in regression.stdout, regression.stdout
+
     site_packages_text = run(
         [str(python), "-c", "import sysconfig; print(sysconfig.get_path('purelib'))"],
         cwd=tmp_path,

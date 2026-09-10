@@ -132,6 +132,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         plugin = GuardPytestPlugin(observer)
         pytest_exit_code = int(pytest.main(list(pytest_args), plugins=[plugin]))
         observer.snapshot("pytest-returned")
+        observer.stop()
         git = discover_git_context(pytest_cwd, enabled=not options.no_git_context)
         guard = classify(contracts, observer, git)
         metrics: dict[str, int | float] = {}

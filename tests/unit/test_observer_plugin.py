@@ -183,6 +183,59 @@ def test_audit_prefix_is_exact(tmp_path: Path) -> None:
         observer.stop()
 
 
+def test_external_transient_child_with_preloaded_pytest(monkeypatch, tmp_path: Path) -> None:
+    package = tmp_path / "_wtig_target"
+    package.mkdir()
+    (package / "__init__.py").write_text("VALUE = 1\n", encoding="utf-8")
+    external = tmp_path / "external"
+    external.mkdir()
+    (external / "child.py").write_text("VALUE = 2\n", encoding="utf-8")
+    monkeypatch.syspath_prepend(str(tmp_path))
+    observer = make_observer(tmp_path)
+    observer.install()
+    try:
+        parent = importlib.import_module("_wtig_target")
+        parent.__path__.append(str(external))
+        child = importlib.import_module("_wtig_target.child")
+        assert child.VALUE == 2
+        del sys.modules[child.__name__]
+        assert any(item.module == child.__name__ for item in
+                   observer.observations_for("_wtig_target"))
+    finally:
+        observer.stop()
+        sys.modules.pop("_wtig_target.child", None)
+        sys.modules.pop("_wtig_target", None)
+
+
+def test_failed_reload_keeps_old_frozen_evidence(monkeypatch, tmp_path: Path) -> None:
+    from worktree_import_guard.models import GitContext, Status
+    from worktree_import_guard.report import classify
+
+    contract = PackageContract("_wtig_target", "_wtig_target", tmp_path / "correct")
+    module = ModuleType("_wtig_target")
+    module.__file__ = str(tmp_path / "correct/__init__.py")
+    module.__spec__ = ModuleSpec(module.__name__, loader=None, origin=module.__file__)
+    monkeypatch.setitem(sys.modules, module.__name__, module)
+
+    def failed_reload(module):
+        raise ImportError("finder failed before execution")
+
+    monkeypatch.setattr(importlib, "reload", failed_reload)
+    observer = ImportObserver((contract,))
+    observer.install()
+    try:
+        before = observer.observations_for(module.__name__)
+        with pytest.raises(ImportError, match="finder failed"):
+            importlib.reload(module)
+        assert observer.observations_for(module.__name__) == before
+        assert not observer.observation_errors
+        result = classify((contract,), observer, GitContext(False))
+        assert result.status is Status.UNKNOWN
+        assert not result.observation_complete
+    finally:
+        observer.stop()
+
+
 def test_importlib_boundary_retains_a_transient_module(monkeypatch, tmp_path: Path) -> None:
     module = ModuleType("_wtig_target")
     module.__file__ = str(tmp_path / "_wtig_target/__init__.py")
@@ -202,6 +255,28 @@ def test_importlib_boundary_retains_a_transient_module(monkeypatch, tmp_path: Pa
         sys.modules.pop(module.__name__)
         retained = observer.observations_for(module.__name__)
         assert retained[0].phase == "importlib-return"
+    finally:
+        observer.stop()
+
+
+def test_nested_import_before_module_insertion_does_not_lose_request(monkeypatch, tmp_path):
+    module = ModuleType("_wtig_target.child")
+    module.__file__ = str(tmp_path / "external/child.py")
+    module.__spec__ = ModuleSpec(module.__name__, loader=None, origin=module.__file__)
+
+    def nested_import(name, package=None):
+        # A loader imports a dependency before publishing the target module.
+        __import__("math")
+        sys.modules[name] = module
+        return module
+
+    monkeypatch.setattr(importlib, "import_module", nested_import)
+    observer = make_observer(tmp_path)
+    observer.install()
+    try:
+        importlib.import_module(module.__name__)
+        del sys.modules[module.__name__]
+        assert observer.observations_for("_wtig_target")[0].module == module.__name__
     finally:
         observer.stop()
 

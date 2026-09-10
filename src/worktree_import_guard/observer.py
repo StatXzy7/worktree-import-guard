@@ -10,6 +10,7 @@ from importlib.util import resolve_name
 from pathlib import Path
 from types import ModuleType
 from typing import Any, cast
+from weakref import ReferenceType, ref
 
 from .matcher import module_matches
 from .models import ObservedModule, PackageContract, ReasonCode
@@ -30,6 +31,7 @@ class ImportObserver:
         self._raw_keys: dict[str, set[tuple[object, ...]]] = {
             contract.package: set() for contract in contracts
         }
+        self._module_instances: dict[tuple[str, str], ReferenceType[ModuleType]] = {}
         self._audit_names: dict[str, set[str]] = {contract.package: set() for contract in contracts}
         self._pending_names: set[str] = set()
         self._original_import: Callable[..., object] | None = None
@@ -45,6 +47,7 @@ class ImportObserver:
         self.full_snapshots = 0
         self.xdist = False
         self.unsupported_reason: ReasonCode | None = None
+        self.observation_errors: list[str] = []
 
     def install(self) -> None:
         """Install instrumentation before pytest itself is imported."""
@@ -65,11 +68,18 @@ class ImportObserver:
             level: int = 0,
         ) -> object:
             assert self._original_import is not None
-            self._queue_import_request(name, globals, level)
             try:
                 return self._original_import(name, globals, locals, fromlist, level)
             finally:
                 self.import_returns += 1
+                # A nested import may have drained the request before insertion.
+                self._queue_import_request(name, globals, level)
+                if fromlist:
+                    for child in fromlist:
+                        if isinstance(child, str) and child != "*":
+                            self._queue_import_request(
+                                f"{name}.{child}" if name else child, globals, level
+                            )
                 self._capture_pending("import-return", source="sys.modules")
 
         self._import_wrapper = observed_import
@@ -77,11 +87,11 @@ class ImportObserver:
 
         def observed_import_module(name: str, package: str | None = None) -> ModuleType:
             assert self._original_import_module is not None
-            self._queue_import_module_request(name, package)
             try:
                 return self._original_import_module(name, package)
             finally:
                 self.import_returns += 1
+                self._queue_import_module_request(name, package)
                 self._capture_pending("importlib-return", source="sys.modules")
 
         self._import_module_wrapper = observed_import_module
@@ -93,7 +103,24 @@ class ImportObserver:
             if module_name is not None:
                 self._queue_name(module_name, audited=True)
             try:
-                return self._original_reload(module)
+                result = self._original_reload(module)
+            except BaseException:
+                # A failed reload may have executed only part of the module, or
+                # nothing at all. Do not reattribute the old frozen evidence.
+                if module_name is not None and self._matching_contracts(module_name):
+                    self.mark_unsupported(ReasonCode.ORIGIN_UNRESOLVED)
+                raise
+            else:
+                # Reload can execute new code with the same object and raw path.
+                # Only this execution boundary invalidates the frozen-path cache.
+                if module_name is not None:
+                    for contract in self._matching_contracts(module_name):
+                        self._raw_keys[contract.package] = {
+                            key for key in self._raw_keys[contract.package]
+                            if key[0] != module_name
+                        }
+                    self._queue_name(module_name, audited=True)
+                return result
             finally:
                 self.import_returns += 1
                 self._capture_pending("reload-return", source="sys.modules")
@@ -107,9 +134,9 @@ class ImportObserver:
 
         try:
             self.snapshot("observer-stopped", source="sys.modules")
-        except Exception:
+        except Exception as error:
             # Cleanup must not replace an import or pytest failure already in flight.
-            pass
+            self._observation_failed("observer-stopped", error)
         finally:
             self._active = False
             if self._original_import is not None and builtins.__import__ is self._import_wrapper:
@@ -125,6 +152,11 @@ class ImportObserver:
     def mark_unsupported(self, reason: ReasonCode, *, xdist: bool = False) -> None:
         self.unsupported_reason = reason
         self.xdist = self.xdist or xdist
+
+    def _observation_failed(self, phase: str, error: Exception) -> None:
+        # Bounded, static context: do not call arbitrary exception __str__ hooks.
+        if len(self.observation_errors) < 20:
+            self.observation_errors.append(f"{phase}: {type(error).__name__}")
 
     def observations_for(self, package: str) -> tuple[ObservedModule, ...]:
         return tuple(self._observations[package])
@@ -235,9 +267,9 @@ class ImportObserver:
                     continue
                 for contract in self._matching_contracts(module_name):
                     self._record(contract.package, module_name, module, phase, source)
-        except Exception:
+        except Exception as error:
             # Lifecycle instrumentation must remain observational.
-            return
+            self._observation_failed(phase, error)
         finally:
             self._snapshotting = False
 
@@ -257,9 +289,9 @@ class ImportObserver:
                     continue
                 for contract in self._matching_contracts(module_name):
                     self._record(contract.package, module_name, module, phase, source)
-        except Exception:
+        except Exception as error:
             # A finally-boundary observer must not replace the import's own result/error.
-            return
+            self._observation_failed(phase, error)
         finally:
             self._snapshotting = False
 
@@ -286,6 +318,15 @@ class ImportObserver:
             file = None
             locations = ()
         raw_key: tuple[object, ...] = (module_name, id(module), spec_origin, file, locations)
+        instance_key = (package, module_name)
+        previous_instance = self._module_instances.get(instance_key)
+        if previous_instance is None or previous_instance() is not module:
+            # Integer IDs can be reused after an unloaded module is collected.
+            # Only the same live instance may reuse frozen raw-path evidence.
+            self._raw_keys[package] = {
+                key for key in self._raw_keys[package] if key[0] != module_name
+            }
+            self._module_instances[instance_key] = ref(module)
         if raw_key in self._raw_keys[package]:
             return
         self._raw_keys[package].add(raw_key)

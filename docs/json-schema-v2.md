@@ -56,3 +56,10 @@ writing fails. With pytest exit 0, guard pass/fail/unknown map to 0/1/2. If JSON
 pytest exit 0, the command exits 2 and writes a diagnostic to stderr.
 
 Exact pass/fail/unknown examples live in `tests/golden/schema-v2-*.json`.
+# Observation failures (additive schema v2 fields)
+
+`OBSERVATION_ERROR` means the observer failed to capture supported imports. Such a run is
+UNKNOWN unless retained evidence already proves a mismatch (which remains FAIL).
+Both completeness flags are false. When errors exist, `guard.observation_errors` contains
+up to 20 capture-phase and exception-type strings. Ordinary import failures do not by
+themselves set this field. Existing fields and successful-report shapes are unchanged.
