@@ -10,6 +10,9 @@ GitHub Release, package upload or remote configuration.
 2. Run CONTRIBUTING checks. Build into a new external directory with
    `python -m build --outdir /absolute/new-candidate/dist`. Keep B0 files unchanged.
    Install the additional maintainer-only check tools with `python -m pip install twine pyyaml`.
+   For a local package-index Markdown preview, install `"readme_renderer[md]==44.0"` and render
+   the wheel METADATA description with `readme_renderer.markdown.render`. This version has
+   Windows binary dependencies; the preview is not a live PyPI upload test.
 3. Run `python docs/releasing/check_candidate.py --dist /absolute/new-candidate/dist --output
    /absolute/new-candidate/verification` on one line. It checks metadata, wheel onboarding, sdist
    installation and the Hero Demo, writing logs and a manifest without uploading. Add `--uv`
@@ -39,7 +42,8 @@ tested files; cross-environment bitwise reproducibility is not promised.
   `worktree-import-guard`, workflow `release.yml`, environment `pypi`. These are pending fields,
   not an existing publisher or reservation. No long-lived upload token is needed.
 - Approve the exact tested files and publication. After uploading, download/check published files,
-  verify their identities and runtime-only onboarding, then enable the PyPI README quick start.
+  verify their identities and runtime-only onboarding, confirm README links resolve on approved
+  main, then enable the PyPI README quick start.
   GitHub Release/tag creation is a separate authorized action; TestPyPI is optional later.
 
 ## Disabled workflow template

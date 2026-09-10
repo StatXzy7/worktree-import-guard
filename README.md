@@ -5,18 +5,22 @@
 You changed code in one checkout, but Python may still import your package from another.
 This tool checks where selected packages were actually loaded from during pytest.
 
-[简体中文](README.zh-CN.md)
+[简体中文](https://github.com/StatXzy7/worktree-import-guard/blob/main/README.zh-CN.md)
 
-This real [demo](examples/cross-worktree-demo/README.md) has **one test**: ordinary pytest
-passes even when the editable install points to the wrong worktree. Excerpt from the B0 demo;
-temporary path prefix replaced by `<demo>`:
+This real [demo](https://github.com/StatXzy7/worktree-import-guard/blob/main/examples/cross-worktree-demo/README.md) has **one test**: ordinary pytest
+passes even when the editable install points to the wrong worktree. Excerpt from the B1 Windows demo;
+temporary path prefix replaced by `<demo>` (additional module details omitted):
 
 ```text
-1 passed in 0.01s
+1 passed in 0.03s
+
+Tests passed.
 WORKTREE IMPORT GUARD: FAIL
-expected: <demo>/feature worktree/src/demo_pkg
-observed: <demo>/main repository/src/demo_pkg/core.py (demo_pkg.core)
+expected: <demo>\feature worktree\src\demo_pkg
+observed: <demo>\main repository\src\demo_pkg\core.py (demo_pkg.core)
 reason:   CROSS_WORKTREE_IMPORT
+next:     Code was loaded from another worktree. Check the Python environment and the editable install used by this test run.
+
 pytest exit: 0
 guard:      FAIL
 ```
@@ -54,11 +58,11 @@ repair installs or change import paths; your tests still execute and may have si
 
 For an incident, if the tool is already installed, run **only the check command** first. Do not
 sync or reinstall the target project before inspecting it. For routine development, follow your
-project's dependency setup first. [uv and missing-command help](docs/troubleshooting.md).
+project's dependency setup first. [uv and missing-command help](https://github.com/StatXzy7/worktree-import-guard/blob/main/docs/troubleshooting.md).
 `pipx`, `uvx` and `uv tool install` use separate tool environments and are not the recommended
 way to inspect your existing pytest environment.
 
-The [release notes draft](docs/releasing/0.1.0-notes.md) contains the shorter PyPI install command
+The [release notes draft](https://github.com/StatXzy7/worktree-import-guard/blob/main/docs/releasing/0.1.0-notes.md) contains the shorter PyPI install command
 for activation **after publication**. Candidate installation is not a PyPI download test.
 
 ## What goes in --expect?
@@ -98,7 +102,7 @@ Relative expected paths start in the pytest working directory. From a parent dir
 to the shell's current directory. Relative `--report-json` paths start in the original invocation
 directory, even with `--cwd`.
 
-No `__init__.py`? Read the [namespace limits](docs/runtime-scope.md#namespace-packages).
+No `__init__.py`? Read the [namespace limits](https://github.com/StatXzy7/worktree-import-guard/blob/main/docs/runtime-scope.md#namespace-packages).
 
 ## Read the result
 
@@ -126,13 +130,13 @@ when pytest succeeded, otherwise preserving pytest's nonzero exit.
 - This does not prove coverage, code equality to a commit, or complete environment isolation.
 - It does not fix your environment and is not a sandbox. Run tests you trust or are authorized to run.
 
-See [troubleshooting](docs/troubleshooting.md) for missing commands, arguments, UNKNOWN and JSON errors.
-Want to see it before checking your own code? The [disposable demo](examples/cross-worktree-demo/README.md)
+See [troubleshooting](https://github.com/StatXzy7/worktree-import-guard/blob/main/docs/troubleshooting.md) for missing commands, arguments, UNKNOWN and JSON errors.
+Want to see it before checking your own code? The [disposable demo](https://github.com/StatXzy7/worktree-import-guard/blob/main/examples/cross-worktree-demo/README.md)
 creates its own two worktrees and environment and checks all three expected outcomes.
 
 ## Details and contributing
 
-[Runtime scope](docs/runtime-scope.md) · [JSON schema v2](docs/json-schema-v2.md) ·
-[Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) · [Changelog](CHANGELOG.md) ·
-[Release checklist](docs/releasing/README.md) · [Historical B0 evidence](docs/release-readiness/b0-readiness.md) ·
-[Benchmarks](benchmarks/README.md)
+[Runtime scope](https://github.com/StatXzy7/worktree-import-guard/blob/main/docs/runtime-scope.md) · [JSON schema v2](https://github.com/StatXzy7/worktree-import-guard/blob/main/docs/json-schema-v2.md) ·
+[Contributing](https://github.com/StatXzy7/worktree-import-guard/blob/main/CONTRIBUTING.md) · [Security](https://github.com/StatXzy7/worktree-import-guard/blob/main/SECURITY.md) · [Changelog](https://github.com/StatXzy7/worktree-import-guard/blob/main/CHANGELOG.md) ·
+[Release checklist](https://github.com/StatXzy7/worktree-import-guard/blob/main/docs/releasing/README.md) · [Historical B0 evidence](https://github.com/StatXzy7/worktree-import-guard/blob/main/docs/release-readiness/b0-readiness.md) ·
+[Benchmarks](https://github.com/StatXzy7/worktree-import-guard/blob/main/benchmarks/README.md)
