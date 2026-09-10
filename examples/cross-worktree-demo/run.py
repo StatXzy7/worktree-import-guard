@@ -18,10 +18,13 @@ def run(
     env: dict[str, str] | None = None,
     expected: int = 0,
 ) -> subprocess.CompletedProcess[str]:
+    child_env = dict(os.environ if env is None else env)
+    child_env["PYTHONUTF8"] = "1"
+    child_env["PYTHONIOENCODING"] = "utf-8"
     completed = subprocess.run(
         command,
         cwd=cwd,
-        env=env,
+        env=child_env,
         check=False,
         capture_output=True,
         text=True,

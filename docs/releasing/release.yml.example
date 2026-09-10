@@ -76,7 +76,10 @@ jobs:
         if: always()
         with:
           name: release-check-${{ matrix.os }}
-          path: ${{ runner.temp }}/release-check/
+          path: |
+            ${{ runner.temp }}/release-check/*.log
+            ${{ runner.temp }}/release-check/*.json
+            ${{ runner.temp }}/release-check/*.xml
           if-no-files-found: error
 
   publish:

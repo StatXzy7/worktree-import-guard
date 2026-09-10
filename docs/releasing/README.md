@@ -9,6 +9,7 @@ GitHub Release, package upload or remote configuration.
    `git worktree list --porcelain`, Python and pytest versions.
 2. Run CONTRIBUTING checks. Build into a new external directory with
    `python -m build --outdir /absolute/new-candidate/dist`. Keep B0 files unchanged.
+   Install the additional maintainer-only check tools with `python -m pip install twine pyyaml`.
 3. Run `python docs/releasing/check_candidate.py --dist /absolute/new-candidate/dist --output
    /absolute/new-candidate/verification` on one line. It checks metadata, wheel onboarding, sdist
    installation and the Hero Demo, writing logs and a manifest without uploading. Add `--uv`
@@ -29,7 +30,7 @@ tested files; cross-environment bitwise reproducibility is not promised.
   endpoint returned HTTP 404, GitHub releases were empty and no remote tags were listed. This is
   a snapshot, not a reservation; network failure is not evidence of name availability.
 - Configure and verify a private vulnerability reporting channel (SECURITY.md).
-- Authorize final source and workflow activation. Move the template to
+- Authorize final source and workflow activation. Copy the template to
   `.github/workflows/release.yml` only in a separately authorized change.
 - Configure the `pypi` GitHub Environment with required reviewers, prevent self-review where
   available and restrict deployment to approved main. Verify the repository plan supports the

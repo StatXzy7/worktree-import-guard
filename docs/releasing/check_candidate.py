@@ -23,10 +23,13 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 def run(command: list[str], cwd: Path, log: Path, *, env=None, expected: int = 0) -> str:
+    child_env = dict(os.environ if env is None else env)
+    child_env["PYTHONUTF8"] = "1"
+    child_env["PYTHONIOENCODING"] = "utf-8"
     result = subprocess.run(
         command,
         cwd=cwd,
-        env=env,
+        env=child_env,
         capture_output=True,
         text=True,
         encoding="utf-8",
@@ -58,7 +61,11 @@ def script(venv: Path, name: str) -> str:
 
 def check_workflows() -> None:
     template = ROOT / "docs/releasing/release.yml.example"
-    for path in [ROOT / ".github/workflows/ci.yml", template]:
+    active_release = ROOT / ".github/workflows/release.yml"
+    paths = [ROOT / ".github/workflows/ci.yml", template]
+    if active_release.exists():
+        paths.append(active_release)
+    for path in paths:
         data = yaml.load(path.read_text(encoding="utf-8"), Loader=yaml.BaseLoader)
         assert data["permissions"] == {"contents": "read"}, path
         for job in data["jobs"].values():
@@ -66,7 +73,7 @@ def check_workflows() -> None:
                 if "uses" in step:
                     assert re.fullmatch(r"[\w-]+/[\w-]+@[0-9a-f]{40}", step["uses"]), step
                 assert "run-id" not in step.get("with", {}), step
-        if path == template:
+        if path in (template, active_release):
             assert set(data["on"]) == {"workflow_dispatch"}
             jobs = data["jobs"]
             assert jobs["publish"]["needs"] == ["build", "test-files"]
@@ -117,13 +124,22 @@ def check_uv(wheel: Path, output: Path) -> None:
         output / "uv-no-sync.log",
         env=env,
     )
+    run(
+        [uv, "pip", "show", "--python", python, "typing-extensions"],
+        project,
+        output / "uv-before-sync-missing.log",
+        env=env,
+        expected=1,
+    )
     config.write_text(
-        config.read_text(encoding="utf-8").replace("dependencies=[]", 'dependencies=["iniconfig"]'),
+        config.read_text(encoding="utf-8").replace(
+            "dependencies=[]", 'dependencies=["typing-extensions"]'
+        ),
         encoding="utf-8",
     )
     run([uv, "run", "wt-import", "--version"], project, output / "uv-run-sync.log", env=env)
     run(
-        [uv, "pip", "show", "--python", python, "iniconfig"],
+        [uv, "pip", "show", "--python", python, "typing-extensions"],
         project,
         output / "uv-run-installed-dependency.log",
         env=env,

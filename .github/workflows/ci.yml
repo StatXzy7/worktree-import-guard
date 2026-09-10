@@ -109,5 +109,8 @@ jobs:
         if: always()
         with:
           name: candidate-evidence-${{ matrix.os }}
-          path: ${{ runner.temp }}/b1-candidate-check/
+          path: |
+            ${{ runner.temp }}/b1-candidate-check/*.log
+            ${{ runner.temp }}/b1-candidate-check/*.json
+            ${{ runner.temp }}/b1-candidate-check/*.xml
           if-no-files-found: error
