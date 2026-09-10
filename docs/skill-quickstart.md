@@ -11,6 +11,17 @@ an existing installation without reviewing it. The source `skills/` folder is no
 itself a Codex discovery directory. This is a local experimental import, not a
 plugin marketplace installation.
 
+From this repository root, with any available Python, replace the destination with
+your test project's absolute path and run this same copy method on Windows/POSIX:
+
+```console
+python -c "import shutil; shutil.copytree('skills/verify-worktree-imports', '/absolute/project/.agents/skills/verify-worktree-imports', ignore=shutil.ignore_patterns('__pycache__'))"
+```
+
+The copy refuses an existing destination. It copies files only; the Python used to
+copy the Skill does not select or install the project's test environment. On Windows
+use a destination such as `D:/my-project/.agents/skills/verify-worktree-imports`.
+
 Open that project in local Codex and ask:
 
 > Use $verify-worktree-imports to check whether pytest loaded another checkout's

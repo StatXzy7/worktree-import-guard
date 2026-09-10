@@ -19,6 +19,7 @@ Do not start project tests for a conceptual question, ordinary test writing,
 JavaScript tests, generic Git work, or a request only to see an example.
 For demo-only requests use the confirmed environment's `wt-import --demo`;
 explain that it tests a private example, not the user's project.
+Use its installed console script, not a `python -c` entry-point substitute.
 
 ## Resolve only missing information
 
@@ -77,6 +78,7 @@ Run one guarded pytest, not an unguarded run followed by a duplicate check. Test
 can have side effects. Do not expand test scope to make an unobserved package green.
 If the helper reports `not_started` or `unusable_report`, say no usable verification
 result was obtained; do not recover PASS from stdout, old JSON, or another environment.
+Do not search for the newest temporary report when the invocation returned no path.
 Do not rerun after a report write failure without considering duplicate side effects.
 
 For `usable_report`, read that envelope's exact report path and apply
