@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import subprocess
 import sys
@@ -24,6 +25,7 @@ def run(
         check=False,
         capture_output=True,
         text=True,
+        encoding="utf-8",
     )
     if completed.returncode != expected:
         raise RuntimeError(
@@ -87,8 +89,14 @@ where = ["src"]
 
 
 def demo(wheel: Path) -> None:
-    with tempfile.TemporaryDirectory(prefix="wtig-demo-") as raw_temp:
-        temp = Path(raw_temp)
+    temporary = tempfile.TemporaryDirectory(prefix="wtig-demo-")
+    temp = Path(temporary.name)
+    print(f"Preparing a private demo repository and environment at {temp}", flush=True)
+    print(
+        "Setup may download pytest and setuptools. Your project environment is not used.",
+        flush=True,
+    )
+    try:
         main = temp / "main repository"
         feature = temp / "feature worktree"
         main.mkdir()
@@ -126,11 +134,26 @@ def demo(wheel: Path) -> None:
         )
         ordinary = run([str(pytest_script), "-q"], cwd=feature, env=env)
         wrong = run(
-            [str(wt_import), "--expect", "demo_pkg=src/demo_pkg", "--", "-q"],
+            [
+                str(wt_import),
+                "--expect",
+                "demo_pkg=src/demo_pkg",
+                "--report-json",
+                str(temp / "wrong.json"),
+                "--",
+                "-q",
+            ],
             cwd=feature,
             env=env,
             expected=1,
         )
+        wrong_report = json.loads((temp / "wrong.json").read_text(encoding="utf-8"))
+        if wrong_report["pytest"]["exit_code"] != 0 or wrong_report["targets"][0]["reasons"] != [
+            "CROSS_WORKTREE_IMPORT"
+        ]:
+            raise RuntimeError(
+                f"Demo did not reproduce a passing test with wrong sources: {wrong.stdout}"
+            )
 
         run(
             [
@@ -146,10 +169,25 @@ def demo(wheel: Path) -> None:
             cwd=temp,
         )
         correct = run(
-            [str(wt_import), "--expect", "demo_pkg=src/demo_pkg", "--", "-q"],
+            [
+                str(wt_import),
+                "--expect",
+                "demo_pkg=src/demo_pkg",
+                "--report-json",
+                str(temp / "correct.json"),
+                "--",
+                "-q",
+            ],
             cwd=feature,
             env=env,
         )
+        correct_report = json.loads((temp / "correct.json").read_text(encoding="utf-8"))
+        if correct_report["guard"] != {
+            "status": "pass",
+            "complete": True,
+            "observation_complete": True,
+        }:
+            raise RuntimeError(f"Demo correct-source control failed: {correct.stdout}")
 
         print("ORDINARY PYTEST (stale main editable, expected exit 0)")
         print(ordinary.stdout.rstrip())
@@ -157,7 +195,16 @@ def demo(wheel: Path) -> None:
         print(wrong.stdout.rstrip())
         print("\nGUARD (feature editable, expected exit 0)")
         print(correct.stdout.rstrip())
-        print("\nDemo passed; the temporary repository and environment were removed.")
+        print("\nDemo passed: native pytest 0, wrong-source guard 1, correct-source guard 0.")
+    finally:
+        try:
+            temporary.cleanup()
+        except OSError as error:
+            print(
+                f"Cleanup could not finish; residual demo files: {temp} ({error})", file=sys.stderr
+            )
+        else:
+            print(f"Removed demo files: {temp}")
 
 
 def main() -> int:

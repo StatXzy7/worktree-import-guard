@@ -55,6 +55,8 @@ include = [
   "/examples",
   "/AGENTS.md",
   "/README.md",
+  "/README.zh-CN.md",
+  "/SECURITY.md",
   "/LICENSE",
   "/CHANGELOG.md",
   "/CONTRIBUTING.md",

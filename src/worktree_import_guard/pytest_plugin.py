@@ -34,7 +34,8 @@ class GuardPytestPlugin:
             import pytest
 
             raise pytest.UsageError(
-                "worktree-import-guard 0.1 does not support distributed pytest-xdist execution"
+                "worktree-import-guard 0.1 does not support distributed pytest-xdist execution; "
+                "run a single process with -n 0 (also check pytest addopts and PYTEST_ADDOPTS)"
             )
 
     def pytest_sessionstart(self, session: Any) -> None:

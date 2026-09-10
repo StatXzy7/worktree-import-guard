@@ -232,15 +232,36 @@ def render_json(report: RunReport) -> str:
 def render_human(report: RunReport, *, show_all: bool = False) -> str:
     """Render compact terminal text from exactly the JSON report model."""
 
-    lines = [f"WORKTREE IMPORT GUARD: {report.guard.status.value.upper()}", ""]
-    visible = [
-        target for target in report.guard.targets if show_all or target.status is not Status.PASS
+    pytest_summary = {
+        0: "Tests passed.",
+        1: "Tests failed.",
+        2: "Pytest was interrupted.",
+        3: "Pytest encountered an internal error.",
+        4: "Pytest could not run with these arguments or settings.",
+        5: "Pytest collected no tests.",
+        6: "Pytest exceeded its warning limit.",
+    }.get(report.pytest_exit_code, f"Pytest exited with code {report.pytest_exit_code}.")
+    summary = {
+        Status.PASS: "Observed sources for the selected packages match your directories.",
+        Status.FAIL: "Observed code sources do not match your directory requirements.",
+        Status.UNKNOWN: "Source verification could not be completed for this run.",
+    }[report.guard.status]
+    lines = [
+        pytest_summary,
+        f"WORKTREE IMPORT GUARD: {report.guard.status.value.upper()}",
+        summary,
+        "",
     ]
-    if not visible:
-        lines.append(f"targets: {', '.join(target.package for target in report.guard.targets)}")
-        lines.append("")
-    for target in visible:
-        lines.extend([target.package, f"expected: {target.expected_root}"])
+    for target in report.guard.targets:
+        lines.extend(
+            [
+                f"{target.package}: {target.status.value.upper()}",
+                f"expected: {target.expected_root}",
+            ]
+        )
+        if target.status is Status.PASS and not show_all:
+            lines.append("")
+            continue
         mixed = ReasonCode.MIXED_ORIGINS in target.reasons
         shown_observations = [
             item
@@ -252,14 +273,60 @@ def render_human(report: RunReport, *, show_all: bool = False) -> str:
                 lines.append(f"observed: {item.origin or '<unresolved>'} ({item.module})")
                 if item.containing_worktree is not None:
                     lines.append(f"worktree: {item.containing_worktree}")
+                if item.issue is not None:
+                    lines.append(f"issue:    {item.issue.value}")
         else:
-            lines.append("observed: <not observed>")
+            if ReasonCode.TARGET_NOT_OBSERVED in target.reasons:
+                lines.append("observed: <not observed>")
+            else:
+                lines.append("observed: <no displayable origin; see reason below>")
         lines.append(f"reason:   {', '.join(reason.value for reason in target.reasons)}")
+        advice = {
+            ReasonCode.CROSS_WORKTREE_IMPORT: (
+                "Code was loaded from another worktree. Check the Python environment and "
+                "the editable install used by this test run."
+            ),
+            ReasonCode.OUTSIDE_EXPECTED_ROOT: (
+                "Check the expected package directory and this environment's "
+                "installed package location."
+            ),
+            ReasonCode.MIXED_ORIGINS: (
+                "This package loaded code from multiple locations. Check its editable install "
+                "and any test configuration that changes import paths."
+            ),
+            ReasonCode.TARGET_NOT_OBSERVED: (
+                "No target import was observed. Check the import name and select tests that "
+                "exercise it in this process; child-process imports are not tracked."
+            ),
+            ReasonCode.UNSUPPORTED_RUNTIME: (
+                "This execution mode cannot be verified. Use CPython and a single pytest "
+                "process; with pytest-xdist installed, use -n 0."
+            ),
+            ReasonCode.UNSUPPORTED_NAMESPACE_LAYOUT: (
+                "This namespace layout cannot be verified. See the namespace limits in README."
+            ),
+            ReasonCode.MATCH: "Observed sources match the expected directory.",
+        }
+        for reason in target.reasons:
+            lines.append(
+                "next:     "
+                + advice.get(
+                    reason,
+                    "Source metadata could not be resolved reliably. Inspect --show-all or "
+                    "--report-json and check the package loader or metadata-changing test code.",
+                )
+            )
         lines.append("")
+    if not report.guard.complete:
+        lines.append("Some source evidence remains unverified; UNKNOWN is not a pass.")
+    if not report.guard.observation_complete:
+        lines.append("Observation was incomplete; this run cannot verify all selected imports.")
     lines.extend(
         [
             f"pytest exit: {report.pytest_exit_code}",
             f"guard:      {report.guard.status.value.upper()}",
+            "The guard did not change import paths or repair the environment; "
+            "pytest may have side effects.",
         ]
     )
     return "\n".join(lines) + "\n"

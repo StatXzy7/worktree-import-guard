@@ -12,7 +12,6 @@ ruff check .
 mypy src
 pytest
 pytest --cov=worktree_import_guard --cov-report=term-missing
-WTIG_RUN_ARTIFACT_TESTS=1 pytest tests/artifact
 python -m build
 ```
 
@@ -24,3 +23,14 @@ use real Git worktrees, not only mocks. Keep public reason codes and JSON schema
 and documented.
 
 By contributing, you agree that your contribution is licensed under the MIT License.
+
+## Explicit installation checks
+
+These opt-in tests create disposable environments and can download dependencies.
+On POSIX: `WTIG_RUN_ARTIFACT_TESTS=1 pytest tests/artifact -q -rA`.
+On PowerShell: `$env:WTIG_RUN_ARTIFACT_TESTS="1"`, then `pytest tests/artifact -q -rA`.
+Set `WTIG_ARTIFACT_WHEEL` to an absolute candidate wheel path to test that exact file;
+otherwise tests build temporary wheels. Normal pytest intentionally skips these expensive checks.
+
+See [releasing](docs/releasing/README.md) for candidate identity, sdist and demo checks.
+No release upload is part of these checks.

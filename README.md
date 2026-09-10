@@ -2,172 +2,137 @@
 
 > Catch Python tests that pass against the wrong Git worktree.
 
-```text
-$ pytest -q
-47 passed
+You changed code in one checkout, but Python may still import your package from another.
+This tool checks where selected packages were actually loaded from during pytest.
 
-$ wt-import --expect acme=src/acme -- -q
-expected: /repo/feature/src/acme
-observed: /repo/main/src/acme/core.py
+[简体中文](README.zh-CN.md)
+
+This real [demo](examples/cross-worktree-demo/README.md) has **one test**: ordinary pytest
+passes even when the editable install points to the wrong worktree. Excerpt from the B0 demo;
+temporary path prefix replaced by `<demo>`:
+
+```text
+1 passed in 0.01s
+WORKTREE IMPORT GUARD: FAIL
+expected: <demo>/feature worktree/src/demo_pkg
+observed: <demo>/main repository/src/demo_pkg/core.py (demo_pkg.core)
 reason:   CROSS_WORKTREE_IMPORT
+pytest exit: 0
+guard:      FAIL
 ```
 
-`worktree-import-guard` checks runtime provenance for explicitly selected Python packages during
-one pytest process. It is aimed at the subtle case where tests pass, but imports came from an
-editable install, stale environment entry, or another checkout instead of the worktree under test.
+## Install once, then check your project
 
-## Install and use
+**0.1.0 is a release candidate, not a published PyPI release.** For early access, obtain the
+candidate `worktree_import_guard-0.1.0-py3-none-any.whl` from the maintainer. There is no public
+B1 download yet. You do not need to clone this tool, install dev extras, or build it yourself.
 
-Until the first package release, install from an authorized checkout into the Python environment
-whose pytest run you want to inspect:
+Run from **your project's root directory**, in the environment where its pytest already works.
+Below, `.venv` is an example of that **existing** environment, not a directory the tool creates.
+Replace it with your actual environment path and replace the wheel path with the file you received.
+Do not create a new environment or reinstall your project just to diagnose it.
 
-```console
-python -m pip install -e .
-.venv/bin/wt-import --expect acme=src/acme -- -q
+Linux / macOS:
+
+```sh
+".venv/bin/python" -m pip install "/path/to/worktree_import_guard-0.1.0-py3-none-any.whl"
+".venv/bin/wt-import" --expect demo_pkg=src/demo_pkg -- -q
 ```
 
-You can also install a locally built candidate with
-`python -m pip install dist/worktree_import_guard-0.1.0-py3-none-any.whl`. After the package is
-actually published, `python -m pip install worktree-import-guard` will be the PyPI installation
-form; it is not presented here as an already available release.
+Windows PowerShell (no activation or execution-policy change needed):
 
-On Windows, the executable is normally `.venv\Scripts\wt-import.exe`.
-
-For a routine `uv` project run, prepare/sync the project environment first and then invoke the
-command:
-
-```console
-uv sync
-uv run wt-import --expect acme=src/acme -- -q
+```powershell
+& ".venv\Scripts\python.exe" -m pip install "C:\path to\worktree_import_guard-0.1.0-py3-none-any.whl"
+& ".venv\Scripts\wt-import.exe" --expect demo_pkg=src/demo_pkg -- -q
 ```
 
-`uv run` normally checks and syncs the project environment. For incident diagnosis of an existing
-possibly stale environment, invoke its already-installed console script directly:
+Use your package's import name and directory in place of `demo_pkg=src/demo_pkg`.
+The Python and `wt-import` paths must belong to the **same environment**. Quote executable paths
+and whole arguments containing spaces, e.g. `--expect "demo_pkg=source tree/demo_pkg"`.
+Installation can install or adjust dependencies (including pytest). The check itself does not
+repair installs or change import paths; your tests still execute and may have side effects.
 
-```console
-.venv/bin/wt-import --expect acme=src/acme -- -q
-```
+For an incident, if the tool is already installed, run **only the check command** first. Do not
+sync or reinstall the target project before inspecting it. For routine development, follow your
+project's dependency setup first. [uv and missing-command help](docs/troubleshooting.md).
+`pipx`, `uvx` and `uv tool install` use separate tool environments and are not the recommended
+way to inspect your existing pytest environment.
 
-On Windows use `.venv\Scripts\wt-import.exe`. After confirming that `uv` selects that exact
-environment and that the command is already installed, `uv run --no-sync wt-import ...` is an
-alternative. `--locked` controls lockfile changes; it does not disable environment syncing.
+The [release notes draft](docs/releasing/0.1.0-notes.md) contains the shorter PyPI install command
+for activation **after publication**. Candidate installation is not a PyPI download test.
 
-The command deliberately has no `--python` option. The environment is selected by the
-`wt-import` executable you invoke. It calls `pytest.main(...)` in that process and neither changes
-`PYTHONPATH` nor inserts an expected source directory into `sys.path`.
+## What goes in --expect?
 
-Declare more than one package by repeating the option. Dotted packages are supported:
-
-```console
-wt-import \
-  --expect acme=src/acme \
-  --expect shared.api=packages/shared/src/shared/api \
-  -- tests/unit -q
-
-wt-import -C backend --expect service=src/service -- -q
-```
-
-Relative expected paths are resolved from the pytest working directory (`--cwd`, or the current
-directory by default).
-
-## Results
-
-Each target is `pass`, `fail`, or `unknown`:
-
-- `pass`: every concrete observed origin is within the canonical expected package directory.
-- `fail`: at least one concrete observed origin is outside it.
-- `unknown`: the target was not observed, or its origin could not be resolved safely.
-
-Unknown never means pass. If pytest succeeds, guard pass/fail/unknown produce process exits 0/1/2.
-An ordinary pytest test failure remains exit 1. All native nonzero pytest exits are preserved,
-including exit 6 for warning limits on pytest versions that provide it.
-If JSON writing also fails, the existing nonzero pytest exit remains authoritative and the report
-error is printed to stderr; with pytest exit 0, a report-write failure exits 2.
-
-Use `--show-all` to include matching origins in human output. Use `--report-json PATH` for the
-stable schema-versioned report:
-
-```console
-wt-import --expect acme=src/acme --report-json provenance.json -- -q
-```
-
-Schema v2 records the invoked virtual-environment identity (`python`, `sys_prefix`) separately
-from the resolved interpreter binary, plus Python/pytest versions and observation metrics.
-`guard.complete` means every target has determinate evidence; `guard.observation_complete` means
-the supported observation lifecycle ran to completion. See
-[`docs/json-schema-v2.md`](docs/json-schema-v2.md) and the golden reports under `tests/golden`.
-
-Git context is best effort. When the expected and wrong origins belong to different worktrees in
-the same `git worktree list --porcelain -z` result, the reason is `CROSS_WORKTREE_IMPORT`.
-Otherwise it is `OUTSIDE_EXPECTED_ROOT`. Use `--no-git-context` to skip Git discovery entirely.
-
-Public V0.1 reason codes are:
+For a **src layout**:
 
 ```text
-MATCH
-CROSS_WORKTREE_IMPORT
-OUTSIDE_EXPECTED_ROOT
-MIXED_ORIGINS
-TARGET_NOT_OBSERVED
-ORIGIN_UNRESOLVED
-ORIGIN_METADATA_CONFLICT
-NON_FILESYSTEM_ORIGIN
-UNSUPPORTED_NAMESPACE_LAYOUT
-UNSUPPORTED_RUNTIME
+project/
+  src/
+    demo_pkg/
+      __init__.py
+  tests/
 ```
 
-## What is observed
+Use `--expect demo_pkg=src/demo_pkg`.
 
-The command installs observation before lazily importing pytest. It combines CPython audit import
-events with incremental target capture at import returns and full `sys.modules` snapshots at
-observer/pytest lifecycle boundaries. Cached unrelated imports do not scan the full module table.
-For each selected package and loaded submodule, it evaluates `__spec__.origin`, `__file__`, and
-namespace search locations. Canonical path operations handle dot segments, symlinks, Windows case
-normalization, separators, spaces, and component boundaries; string-prefix containment is never
-used.
+For a **flat layout**:
 
-For a one-off incident, manually checking `package.__file__` is a valid solution. The value of
-this tool is making the check repeatable, covering selected submodules, producing deterministic
-exit codes and JSON, and allowing it to be retained in a test, CI, or coding-agent workflow.
-
-## Scope and trust
-
-V0.1 observes only the current, single pytest process.
-
-- Complete pytest-xdist tracing is not supported. An active distributed run is rejected rather
-  than reported as a trustworthy pass.
-- Imports that occur only in child processes are not covered.
-- Namespace packages with more than one search root are reported unknown.
-- This is runtime diagnostic instrumentation, not environment prediction or repair.
-- It does not create environments, repair editable installs, or mutate import paths.
-- It is not a sandbox, and audit hooks are not tamper-proof security evidence.
-
-Pytest executes arbitrary repository code. Use this tool only for trusted or authorized test
-execution; hostile code in the same process can interfere with diagnostics.
-
-## Reproducible demo and performance probes
-
-The installed-wheel demo creates and removes its own temporary Git repository, two worktrees, and
-shared virtual environment:
-
-```console
-python -m build
-python examples/cross-worktree-demo/run.py --wheel dist
+```text
+project/
+  demo_pkg/
+    __init__.py
+  tests/
 ```
 
-Independent observer and end-to-end pytest benchmark scripts retain all samples and report medians
-plus ranges:
+Use `--expect demo_pkg=demo_pkg`.
 
-```console
-python benchmarks/observer_imports.py --repeats 7
-python benchmarks/pytest_overhead.py --repeats 7
-```
+The left side is the name in `import demo_pkg`; it may differ from the name used by pip.
+The right side is the source **package directory** you want these tests to load. Do not use just
+the repository root or point it at another worktree. Repeat `--expect` for multiple packages,
+e.g. `--expect demo_pkg=src/demo_pkg --expect shared.api=lib/shared/api`.
 
-These synthetic probes are regression evidence, not a universal performance claim. See
-[`benchmarks/README.md`](benchmarks/README.md) for their measured fields and limitations.
+Relative expected paths start in the pytest working directory. From a parent directory,
+`--cwd backend --expect demo_pkg=src/demo_pkg` expects `backend/src/demo_pkg` and runs pytest in
+`backend`. If the executable is also inside backend, invoke `"backend/.venv/bin/wt-import"` (or
+`& "backend\.venv\Scripts\wt-import.exe"` in PowerShell). Executable paths are still relative
+to the shell's current directory. Relative `--report-json` paths start in the original invocation
+directory, even with `--cwd`.
 
-## Development
+No `__init__.py`? Read the [namespace limits](docs/runtime-scope.md#namespace-packages).
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). The real-worktree integration test constructs a temporary
-main and feature worktree, deliberately resolves `demo_pkg` to main while running in feature, and
-proves that ordinary pytest passes while the guard reports `CROSS_WORKTREE_IMPORT`.
+## Read the result
+
+| Result | Meaning | Next step |
+| --- | --- | --- |
+| PASS | Observed sources for your selected packages match the requested directories. | Check pytest's separate result; this does not prove test coverage. |
+| FAIL | Observed code came from outside a requested directory. | Compare `expected` and `observed`; inspect the selected environment and editable install. |
+| UNKNOWN | This source check could not be completed. | Read `reason` and `next`: the target may be unobserved, metadata unresolved, or execution unsupported. |
+
+UNKNOWN is never a pass. The report shows each selected package and its expected directory.
+`--show-all` also shows matching modules. `--report-json provenance.json` saves detailed evidence;
+use an existing writable directory and redact paths before sharing it.
+
+If pytest fails but the guard says PASS, **the tests failed and the observed sources matched**.
+All native nonzero pytest exits are preserved, including exit 6 where pytest supports it.
+When pytest exits 0, guard PASS / FAIL / UNKNOWN exit 0 / 1 / 2. A JSON write failure exits 2
+when pytest succeeded, otherwise preserving pytest's nonzero exit.
+
+## Common questions and limits
+
+- Only explicitly selected packages, their observed submodules, and this supported pytest process
+  are checked. Unexecuted code and child-process-only imports are not verified.
+- Active pytest-xdist is unsupported; run one process (`-n 0` when xdist is installed).
+- A mismatch is called “another worktree” only when Git confirms the relationship.
+- This does not prove coverage, code equality to a commit, or complete environment isolation.
+- It does not fix your environment and is not a sandbox. Run tests you trust or are authorized to run.
+
+See [troubleshooting](docs/troubleshooting.md) for missing commands, arguments, UNKNOWN and JSON errors.
+Want to see it before checking your own code? The [disposable demo](examples/cross-worktree-demo/README.md)
+creates its own two worktrees and environment and checks all three expected outcomes.
+
+## Details and contributing
+
+[Runtime scope](docs/runtime-scope.md) · [JSON schema v2](docs/json-schema-v2.md) ·
+[Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) · [Changelog](CHANGELOG.md) ·
+[Release checklist](docs/releasing/README.md) · [Historical B0 evidence](docs/release-readiness/b0-readiness.md) ·
+[Benchmarks](benchmarks/README.md)

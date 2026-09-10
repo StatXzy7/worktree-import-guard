@@ -2,9 +2,16 @@
 
 All notable changes to this project are documented here.
 
-## Unreleased
+## 0.1.0 — Unreleased candidate
 
 ### Changed
+
+- Reworked onboarding around the existing pytest environment, with src/flat layouts and Chinese.
+- Separated test outcomes from source checks and added actionable help and error explanations.
+- Human output retains WORKTREE IMPORT GUARD, expected, observed, reason, pytest exit and guard
+  markers; per-target status and next steps are new. JSON v2, reasons and exit policy are unchanged.
+- Demo validates actual wrong-worktree evidence and reports cleanup leftovers honestly.
+- Added runtime-only onboarding checks and a disabled Trusted Publishing workflow template.
 
 - Replaced full module-table scans at every import return with incremental target capture and
   lifecycle fallback snapshots.
@@ -21,9 +28,7 @@ All notable changes to this project are documented here.
 - Pinned public CI, wheel/sdist smoke checks, golden reports, independent benchmarks, and a
   disposable executable demo.
 
-## 0.1.0 - 2026-09-10
-
-### Added
+### Initial capabilities
 
 - Explicit repeatable `PACKAGE=PATH` runtime provenance contracts.
 - Early CPython import observation and pytest lifecycle snapshots.
