@@ -5,6 +5,11 @@
 你改的是 **feature**，Python 加载的却是 **main**。本工具在 pytest 实际运行时发现这个来源差异。
 [English](README.md)
 
+**让 Coding Agent 帮我检查：**[实验性本地 Codex Skill](docs/skill-quickstart.md)
+复用已有设置，在项目原有 pytest 环境中调用检测器。导入一次后说：
+“使用 $verify-worktree-imports 检查当前项目，先别修环境。”
+宿主需要访问本机项目；首次使用可能需要确认环境和安装。[验证状态](docs/skill-validation.md)。
+
 下面来自[真实运行记录](docs/demo-output.txt)，只保留关键行；`<demo>` 替换临时目录。
 这是示例展示，不是在扫描你的电脑：
 

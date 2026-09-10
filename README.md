@@ -85,6 +85,14 @@ With Git it creates real worktrees, otherwise it labels two ordinary directories
 downloads after installation. The [maintainer demo](examples/cross-worktree-demo/README.md)
 separately verifies the complete editable-install chain.
 
+## Let a coding agent check
+
+An [experimental local Codex Skill](docs/skill-quickstart.md) reuses your settings
+and runs the detector in your project's existing pytest environment. Import the
+Skill folder once, then ask: “Use $verify-worktree-imports to check this project;
+do not repair the environment.” The host needs local project access; first use
+may require an environment/install confirmation. [Validation status](docs/skill-validation.md).
+
 ## Read the two results
 
 | Source result | Meaning | Next step |

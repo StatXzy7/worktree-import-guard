@@ -97,3 +97,41 @@ def test_public_readme_install_demo_setup_and_repeat(tmp_path, project_root, mon
     )
     assert not ({p["name"] for p in installed} & {"build", "mypy", "ruff", "pytest-cov"})
     print(f"Public README source {commit}: install/demo/setup/repeat passed without dev extras")
+
+    # Upgrade the actual old VCS preview, retaining supported pytest and dependency files.
+    snapshot_code = (
+        "import importlib.metadata as m,json; "
+        "print(json.dumps({d.metadata['Name']: {'version':d.version, "
+        "'record_mtime':next((d.locate_file(f).stat().st_mtime_ns for f in "
+        "(d.files or []) if str(f).endswith('.dist-info/RECORD')),None)} "
+        "for d in m.distributions() if d.metadata['Name'] != 'worktree-import-guard'}))"
+    )
+    before = json.loads(run([str(python), "-c", snapshot_code], cwd=project).stdout)
+    wheel_value = os.environ.get("WTIG_ARTIFACT_WHEEL")
+    if wheel_value:
+        from pathlib import Path
+
+        wheel = Path(wheel_value).resolve()
+    else:
+        candidate = tmp_path / "candidate"
+        run([sys.executable, "-m", "build", "--wheel", "--outdir", str(candidate)],
+            cwd=project_root)
+        wheel = next(candidate.glob("*.whl"))
+    shell_run([str(python), "-m", "pip", "install", "--upgrade", str(wheel)], project)
+    after = json.loads(run([str(python), "-c", snapshot_code], cwd=project).stdout)
+    assert before == after, (before, after)
+    assert shell_run([str(guard), "--version"], project).stdout.strip() == "wt-import 0.1.1"
+    assert "Demo complete" in shell_run([str(guard), "--demo"], project).stdout
+    import shutil
+
+    skill = tmp_path / "independent skill"
+    shutil.copytree(project_root / "skills/verify-worktree-imports", skill,
+                    ignore=shutil.ignore_patterns("__pycache__"))
+    helper = skill / "scripts/run_check.py"
+    for expectations, expected in (([], 0), (["--expect", "demo_pkg=wrong"], 1)):
+        (project / "wrong").mkdir(exist_ok=True)
+        checked = run([str(python), str(helper), "--cwd", str(project), *expectations,
+                       "--", "-q"], cwd=project, expected=expected, env=clean_env())
+        assert json.loads(checked.stdout)["result"] == "usable_report"
+    print("Upgrade 0.1.0 VCS preview -> 0.1.1 candidate: dependency versions and RECORD "
+          "mtimes retained; installed demo and standalone Skill positive/negative checks passed")

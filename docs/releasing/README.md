@@ -1,7 +1,31 @@
-# Prepare and authorize 0.1.0
+# Publish the 0.1.1 candidate once authorized
 
-Maintainer documentation; normal users only need README. B1 does not authorize a push, merge, tag,
-GitHub Release, package upload or remote configuration.
+Maintainer documentation; normal users only need README. Source PR/merge authorization
+does not authorize tags, GitHub Releases, package uploads or remote configuration.
+Version 0.1.1 distinguishes this candidate from old 0.1.0 source previews. The public
+README remains pinned to the verified preview until a real release is available.
+
+## Remaining external actions (one release operation)
+
+1. Obtain explicit authorization for PyPI upload, release tag/GitHub Release and
+   required Trusted Publisher / GitHub environment configuration. None is implied
+   by merging the source PR. Confirm index ownership; a 404 is not a name reservation.
+2. Configure the publisher for this repository's reviewed manual release workflow,
+   protected `pypi` environment, and the exact approved main commit. Move the existing
+   disabled template only within that authorization. Only the publish job gets OIDC.
+3. Dispatch version 0.1.1 from that exact main; retain the same built/tested wheel
+   and sdist, hashes and CI artifact identity through upload. Create the authorized
+   tag and Release for that source; do not rebuild or rename old candidate artifacts.
+4. Download from the real PyPI index into a new directory, compare both file hashes
+   with the published manifest, install into a fresh environment, verify metadata,
+   --version, help, demo, and positive/wrong-source controls. Only then switch the
+   homepage to `python -m pip install worktree-import-guard==0.1.1` and mark
+   PUBLISHED_AND_SMOKED. A local wheel check does not establish this state.
+
+The artifact test also upgrades the actual pinned 0.1.0 VCS preview to the candidate
+using ordinary pip upgrade. It compares all other installed distribution versions
+and RECORD mtimes, retaining supported pytest 8.2.0 in that disposable environment.
+This is a measured scenario, not a promise of zero dependency changes everywhere.
 
 ## Candidate checks
 
@@ -18,7 +42,7 @@ GitHub Release, package upload or remote configuration.
    installation and the Hero Demo, writing logs and a manifest without uploading. Add `--uv`
    when validating the uv recipe.
 4. Run the same commit through CI, including Windows and Ubuntu artifact jobs. Record run/attempt,
-   checkout/PR head identities, artifact IDs/digests and file hashes. Old B0 CI is not new B1 CI.
+   checkout/PR head identities, artifact IDs/digests and file hashes. Old CI is not candidate CI.
 5. Review evidence and scope. Missing required platform runs mean
    `PREPARED_WITH_VERIFICATION_GAPS`, not `GO_FOR_AUTHORIZED_RELEASE`.
 
@@ -26,30 +50,23 @@ Keep final evidence outside the worktree or in CI artifacts. A summary can refer
 verified commit. Do not rebuild repeatedly to write the final SHA into itself. Hashes identify
 tested files; cross-environment bitwise reproducibility is not promised.
 
-## External checks and authorization before publication
+## Publisher configuration details for the operation above
 
-- Authorize B1 push/PR for new CI and resolve the PR #1 dependency; approve merging separately.
-- Recheck PyPI project/version availability, GitHub tags and releases. On 2026-09-10 the PyPI JSON
-  endpoint returned HTTP 404, GitHub releases were empty and no remote tags were listed. This is
-  a snapshot, not a reservation; network failure is not evidence of name availability.
-- Configure and verify a private vulnerability reporting channel (SECURITY.md).
-- Authorize final source and workflow activation. Copy the template to
-  `.github/workflows/release.yml` only in a separately authorized change.
-- Configure the `pypi` GitHub Environment with required reviewers, prevent self-review where
-  available and restrict deployment to approved main. Verify the repository plan supports the
-  actual protections. An environment name alone provides no protection.
-- Configure PyPI Trusted Publishing: project `worktree-import-guard`, owner `StatXzy7`, repository
-  `worktree-import-guard`, workflow `release.yml`, environment `pypi`. These are pending fields,
-  not an existing publisher or reservation. No long-lived upload token is needed.
-- Approve the exact tested files and publication. After uploading, download/check published files,
-  verify their identities and runtime-only onboarding, confirm README links resolve on approved
-  main, then enable the PyPI README quick start.
-  GitHub Release/tag creation is a separate authorized action; TestPyPI is optional later.
+Proposed Trusted Publisher fields: project `worktree-import-guard`, owner `StatXzy7`,
+repository `worktree-import-guard`, workflow `release.yml`, environment `pypi`.
+These are pending configuration, not an existing publisher or reservation. Use
+required reviewers and approved-main deployment restrictions supported by the
+repository plan; an environment name alone is not a protection. Do not add a
+long-lived upload token. See [PyPI's official publishing guide](https://docs.pypi.org/trusted-publishers/using-a-publisher/).
+
+Read-only snapshot on 2026-09-11 (Asia/Shanghai): PyPI JSON returned HTTP 404 and
+GitHub tags/releases were empty. Recheck at release time. The current candidate
+notes are [0.1.1-notes.md](0.1.1-notes.md); 0.1.0 notes remain historical drafts.
 
 ## Disabled workflow template
 
 [release.yml.example](release.yml.example) is outside Actions discovery. It only accepts manual
-runs on main in this repository and the literal 0.1.0 approval input. It builds once, tests those
+runs on main in this repository and the literal 0.1.1 approval input. It builds once, tests those
 exact files on Ubuntu and Windows, then publishes after both jobs and environment approval.
 The publish job downloads artifacts from the same run, verifies trusted build-job hashes and never
 rebuilds or accepts a user-provided run ID. PRs and ordinary pushes cannot publish. The input does

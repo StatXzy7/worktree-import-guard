@@ -107,7 +107,7 @@ def test_readme_in_existing_environment(tmp_path: Path, project_root: Path, layo
     assert "Choose a writable file path" in unwritable.stderr
     assert "Traceback" not in unwritable.stderr
     versions = shell_run([str(guard), "--version"], project)
-    assert versions.stdout.strip() == "wt-import 0.1.0"
+    assert versions.stdout.strip() == "wt-import 0.1.1"
     packages = run([str(python), "-m", "pip", "list", "--format=json"], cwd=project)
     names = {p["name"].lower() for p in json.loads(packages.stdout)}
     assert not names & {"build", "mypy", "ruff", "pytest-cov", "pytest-xdist", "twine"}

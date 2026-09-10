@@ -83,7 +83,7 @@ def check_workflows() -> None:
                 for restriction in (
                     "refs/heads/main",
                     "workflow_dispatch",
-                    "0.1.0",
+                    "0.1.1",
                     "StatXzy7/worktree-import-guard",
                 ):
                     assert restriction in jobs[name]["if"]
@@ -172,8 +172,8 @@ def main() -> int:
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=False)
     dist = args.dist.resolve()
-    wheel = dist / "worktree_import_guard-0.1.0-py3-none-any.whl"
-    sdist = dist / "worktree_import_guard-0.1.0.tar.gz"
+    wheel = dist / "worktree_import_guard-0.1.1-py3-none-any.whl"
+    sdist = dist / "worktree_import_guard-0.1.1.tar.gz"
     files = [identity(wheel), identity(sdist)]
     env = os.environ.copy()
     env["PYTHONUTF8"] = "1"
@@ -204,18 +204,18 @@ def main() -> int:
         check_workflows()
         with zipfile.ZipFile(wheel) as archive:
             metadata = BytesParser().parsebytes(
-                archive.read("worktree_import_guard-0.1.0.dist-info/METADATA")
+                archive.read("worktree_import_guard-0.1.1.dist-info/METADATA")
             )
-            assert metadata["Name"] == "worktree-import-guard" and metadata["Version"] == "0.1.0"
+            assert metadata["Name"] == "worktree-import-guard" and metadata["Version"] == "0.1.1"
             assert metadata["Description-Content-Type"] == "text/markdown"
             runtime = [r for r in metadata.get_all("Requires-Dist", []) if "extra ==" not in r]
             assert len(runtime) == 1 and runtime[0].startswith("pytest"), runtime
             manifest["runtime_dependencies"] = runtime
             assert "LICENSE" in " ".join(archive.namelist())
         with tarfile.open(sdist) as archive:
-            member = archive.extractfile("worktree_import_guard-0.1.0/PKG-INFO")
+            member = archive.extractfile("worktree_import_guard-0.1.1/PKG-INFO")
             assert member is not None
-            assert BytesParser().parsebytes(member.read())["Version"] == "0.1.0"
+            assert BytesParser().parsebytes(member.read())["Version"] == "0.1.1"
         run(
             [sys.executable, "-m", "twine", "check", "--strict", str(wheel), str(sdist)],
             ROOT,
@@ -298,7 +298,7 @@ def main() -> int:
                 output / "sdist-version.log",
                 env=env,
             ).strip()
-            == "wt-import 0.1.0"
+            == "wt-import 0.1.1"
         )
         if args.uv:
             check_uv(wheel, output)
