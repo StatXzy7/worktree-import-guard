@@ -16,6 +16,7 @@ from .contracts import ContractError, parse_contracts
 from .git_worktrees import discover_git_context
 from .models import ReasonCode, RunReport, Status
 from .observer import ImportObserver
+from .project_config import find_config, load_config
 from .pytest_plugin import GuardPytestPlugin
 from .report import classify, render_human, write_json_report
 
@@ -39,7 +40,7 @@ def _parser() -> argparse.ArgumentParser:
         action="append",
         dest="expectations",
         metavar="PACKAGE=PATH",
-        help="package import name=expected source package directory; required, repeatable",
+        help="package import name=expected directory; repeatable, replaces saved configuration",
     )
     parser.add_argument(
         "-C",
@@ -64,6 +65,11 @@ def _parser() -> argparse.ArgumentParser:
         help="show matching module origins as well as failures and unknowns",
     )
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
+    entry = parser.add_mutually_exclusive_group()
+    entry.add_argument("--demo", action="store_true", help="run a private, built-in demonstration")
+    entry.add_argument(
+        "--setup", action="store_true", help="confirm package directories and save settings"
+    )
     parser.add_argument("pytest_args", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
     return parser
 
@@ -89,11 +95,22 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     parser = _parser()
     options = parser.parse_args(argv)
-    if not options.expectations:
-        parser.error(
-            "at least one --expect PACKAGE=PATH is required; "
-            "try --expect demo_pkg=src/demo_pkg -- -q (use your package name and directory)"
-        )
+    if (options.demo or options.setup) and options.expectations:
+        parser.error("--demo/--setup cannot be combined with --expect")
+    if options.demo:
+        if (
+            options.pytest_args
+            or options.cwd != "."
+            or options.report_json
+            or options.show_all
+            or options.no_git_context
+        ):
+            parser.error(
+                "--demo runs its own private example; do not combine it with check options"
+            )
+        from .demo import run_demo
+
+        return run_demo()
 
     invocation_cwd = Path.cwd()
     pytest_cwd = Path(options.cwd).expanduser()
@@ -106,7 +123,19 @@ def main(argv: Sequence[str] | None = None) -> int:
             "check --cwd, or run from your project directory without --cwd"
         )
     try:
-        contracts = parse_contracts(options.expectations, pytest_cwd)
+        if options.setup:
+            from .onboarding import setup
+
+            selected = setup(pytest_cwd)
+            if selected is None:
+                return 2
+            contracts = selected
+        elif options.expectations:
+            contracts = parse_contracts(options.expectations, pytest_cwd)
+        elif (config := find_config(pytest_cwd)) is not None:
+            contracts = load_config(config)
+        else:
+            parser.error("no package settings; run --setup, or use --expect PACKAGE=PATH -- -q")
     except ContractError as error:
         parser.error(
             f"{error}; use an import name and source directory, e.g. demo_pkg=src/demo_pkg"

@@ -91,7 +91,7 @@ def test_incomplete_failure_keeps_unresolved_evidence_visible() -> None:
 @pytest.mark.parametrize(
     ("args", "expected"),
     [
-        ([], "at least one --expect"),
+        ([], "no package settings; run --setup"),
         (["--expect", "demo_pkg"], "demo_pkg=src/demo_pkg"),
         (["--expect", "demo_pkg=src/demo_pkg", "--cwd", "missing directory"], "check --cwd"),
     ],
