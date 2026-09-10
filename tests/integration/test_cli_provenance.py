@@ -148,7 +148,9 @@ def test_value():
     )
 
 
-def test_pytest_failure_and_native_exit_codes_are_preserved(tmp_path: Path, run_guard) -> None:
+def test_pytest_failure_and_native_exit_codes_are_preserved(
+    tmp_path: Path, run_guard, test_runner_command: list[str], guard_command: list[str]
+) -> None:
     write_package(tmp_path, "failure_pkg")
     write_test(tmp_path, "import failure_pkg\n\ndef test_failure():\n    assert False\n")
     failed = run_guard(tmp_path, "--expect", "failure_pkg=failure_pkg", "--", "-q")
@@ -165,6 +167,30 @@ def test_pytest_failure_and_native_exit_codes_are_preserved(tmp_path: Path, run_
     usage = run_guard(tmp_path, "--expect", "failure_pkg=failure_pkg", "--", "--bad-option")
     assert usage.completed.returncode == 4
     assert usage.report["pytest"]["exit_code"] == 4
+
+    # Exercise newer native states only on versions that actually define them.
+    if hasattr(pytest.ExitCode, "MAX_WARNINGS_ERROR"):
+        write_test(
+            tmp_path,
+            "import failure_pkg\nimport warnings\n\ndef test_warning():\n"
+            "    warnings.warn('native warning threshold', UserWarning)\n",
+        )
+        args = ["--max-warnings=0", "-q"]
+        native = subprocess.run(
+            [*test_runner_command, *args], cwd=tmp_path, capture_output=True, text=True
+        )
+        assert native.returncode == int(pytest.ExitCode.MAX_WARNINGS_ERROR)
+        guarded = run_guard(tmp_path, "--expect", "failure_pkg=failure_pkg", "--", *args)
+        assert guarded.completed.returncode == native.returncode
+        assert guarded.report["pytest"]["exit_code"] == native.returncode
+        assert guarded.report["guard"]["status"] == "pass"
+        report_failure = subprocess.run(
+            [*guard_command, "--expect", "failure_pkg=failure_pkg",
+             "--report-json", str(tmp_path), "--", *args],
+            cwd=tmp_path, capture_output=True, text=True,
+        )
+        assert report_failure.returncode == native.returncode
+        assert "could not write JSON report" in report_failure.stderr
 
 
 def test_pytest_keyboard_interrupt_exit_is_preserved(tmp_path: Path, run_guard) -> None:

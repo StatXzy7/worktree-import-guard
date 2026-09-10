@@ -79,7 +79,8 @@ Each target is `pass`, `fail`, or `unknown`:
 - `unknown`: the target was not observed, or its origin could not be resolved safely.
 
 Unknown never means pass. If pytest succeeds, guard pass/fail/unknown produce process exits 0/1/2.
-An ordinary pytest test failure remains exit 1. Native pytest exits 2, 3, 4, and 5 are preserved.
+An ordinary pytest test failure remains exit 1. All native nonzero pytest exits are preserved,
+including exit 6 for warning limits on pytest versions that provide it.
 If JSON writing also fails, the existing nonzero pytest exit remains authoritative and the report
 error is printed to stderr; with pytest exit 0, a report-write failure exits 2.
 

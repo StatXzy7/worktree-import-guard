@@ -115,9 +115,13 @@ jobs:
           "${RUNNER_TEMP}/sdist-smoke/bin/python" -m pip install "${RUNNER_TEMP}"/sdist-wheel/worktree_import_guard-*.whl
           cd "${RUNNER_TEMP}"
           "${RUNNER_TEMP}/sdist-smoke/bin/wt-import" --help
+          "${RUNNER_TEMP}/sdist-smoke/bin/python" -m pip list --format=freeze
+          sha256sum "${RUNNER_TEMP}"/sdist-wheel/worktree_import_guard-*.whl
       - name: Verify installed wheel console scripts and editable worktrees
         env:
           WTIG_RUN_ARTIFACT_TESTS: "1"
         run: |
           pytest tests/artifact -q -rA --junitxml=artifact-junit.xml
           python -c "import xml.etree.ElementTree as ET; r=ET.parse('artifact-junit.xml').getroot(); suites=[r] if r.tag == 'testsuite' else list(r); passed=sum(int(s.attrib.get('tests','0'))-int(s.attrib.get('failures','0'))-int(s.attrib.get('errors','0'))-int(s.attrib.get('skipped','0')) for s in suites); assert passed >= 1, 'artifact tests did not execute and pass'"
+      - name: Hero Demo using the downloaded wheel
+        run: python examples/cross-worktree-demo/run.py --wheel "$WTIG_ARTIFACT_WHEEL"
