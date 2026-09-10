@@ -36,3 +36,6 @@ tests named `demo` or `setup`, remain pytest arguments.
 Tests still execute with their usual side effects. Source PASS does not override failing tests;
 no tests preserves pytest exit 5, and an unobserved package is UNKNOWN. Setup automation tests
 exercise scripted terminal input; they are not evidence from real novice users.
+
+If a redirected terminal cannot encode a path character, human output escapes that character
+(for example `\u4e2d`) instead of crashing. UTF-8 configuration and JSON reports retain the exact path.

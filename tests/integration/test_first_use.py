@@ -87,3 +87,19 @@ def test_broken_config_is_ignored_only_for_explicit_targets(tmp_path, run_guard)
     assert "could not read" in broken.completed.stderr
     explicit = run_guard(tmp_path, "--expect", "absent=absent", "--", "-q")
     assert explicit.report["pytest"]["exit_code"] == 0
+
+
+@pytest.mark.parametrize("test_fails", [False, True])
+def test_legacy_console_keeps_unicode_json_and_native_exit(
+    tmp_path, run_guard, monkeypatch, test_fails
+):
+    project = tmp_path / "中文 project"
+    project.mkdir()
+    write_package(project, "pkg")
+    write_test(project, f"import pkg\ndef test_value():\n    assert {not test_fails!r}\n")
+    monkeypatch.setenv("PYTHONIOENCODING", "ascii")
+    result = run_guard(project, "--expect", "pkg=pkg", "--", "-q")
+    assert result.completed.returncode == int(test_fails), result.completed.stderr
+    assert "UnicodeEncodeError" not in result.completed.stderr
+    assert result.report["guard"]["status"] == "pass"
+    assert "中文" in result.report["targets"][0]["expected_root"]

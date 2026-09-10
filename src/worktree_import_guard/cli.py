@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import importlib
+import io
 import os
 import platform
 import sys
@@ -93,6 +94,12 @@ def report_write_failure_exit_code(pytest_exit_code: int) -> int:
 def main(argv: Sequence[str] | None = None) -> int:
     """Run pytest in this executable's interpreter and evaluate provenance."""
 
+    # Legacy redirected Windows streams may not encode Unicode source paths.
+    # Escape only unrepresentable characters; keep the selected stream encoding
+    # and preserve exact Unicode in the UTF-8 JSON report/configuration.
+    for stream in (sys.stdout, sys.stderr):
+        if isinstance(stream, io.TextIOWrapper):
+            stream.reconfigure(errors="backslashreplace")
     parser = _parser()
     options = parser.parse_args(argv)
     if (options.demo or options.setup) and options.expectations:
