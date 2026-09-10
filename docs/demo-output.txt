@@ -1,0 +1,42 @@
+Recorded on Windows / CPython 3.13.9 / pytest 9.1.1.
+Installed source: edae3e6fa9a0b065385a080c371c9c17728b4656.
+Only the temporary directory prefix is replaced with <demo>.
+
+Demo: tests pass even when Python loads another copy of the source.
+Private example directory: <demo>
+This fixture deliberately selects an import path; no project environment is repaired.
+Two real Git worktrees; simplified path-selection fixture, not a PEP 660 install.
+1. Ordinary pytest:
+.                                                                        [100%]
+1 passed in 0.04s
+2. Check wrong source:
+.                                                                        [100%]
+1 passed in 0.02s
+Tests passed.
+WORKTREE IMPORT GUARD: FAIL
+Observed code sources do not match your directory requirements.
+
+demo_pkg: FAIL
+expected: <demo>\feature\src\demo_pkg
+observed: <demo>\main\src\demo_pkg\__init__.py (demo_pkg)
+worktree: <demo>\main
+reason:   CROSS_WORKTREE_IMPORT
+next:     Code was loaded from another worktree. Check the Python environment and the editable install used by this test run.
+
+pytest exit: 0
+guard:      FAIL
+The guard did not change import paths or repair the environment; pytest may have side effects.
+3. Select correct source inside this example:
+.                                                                        [100%]
+1 passed in 0.02s
+Tests passed.
+WORKTREE IMPORT GUARD: PASS
+Observed sources for the selected packages match your directories.
+
+demo_pkg: PASS
+expected: <demo>\feature\src\demo_pkg
+
+pytest exit: 0
+guard:      PASS
+The guard did not change import paths or repair the environment; pytest may have side effects.
+Demo complete: passing tests, wrong-source FAIL, then correct-source PASS.

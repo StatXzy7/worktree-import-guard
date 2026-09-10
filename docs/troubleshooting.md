@@ -6,8 +6,8 @@ The checks below do not repair your environment. Installing/syncing dependencies
 | Symptom | What to do |
 | --- | --- |
 | Shell cannot find `wt-import` | Invoke the console script beside that environment's pytest: `.venv/bin/wt-import` or `& ".venv\Scripts\wt-import.exe"`. Replace `.venv` with the real path; do not fall back to another PATH entry. |
-| Script does not exist there | Check installation with that environment's `python -m pip show worktree-import-guard`. If absent, install the candidate wheel there using the README command; installation may adjust dependencies. If pip is missing, use your project's established installer against that same interpreter. |
-| Missing `--expect`, malformed `PACKAGE=PATH` | Use the Python import name and expected package directory, e.g. `--expect demo_pkg=src/demo_pkg`. Quote the whole argument if its path contains spaces. |
+| Script does not exist there | Check installation with that environment's `python -m pip show worktree-import-guard`. If absent, install the fixed-source preview there using the README command; installation may adjust dependencies. If pip is missing, use your project's established installer against that same interpreter. |
+| No saved settings, malformed `PACKAGE=PATH` | Run `--setup` once, or use the Python import name and expected package directory, e.g. `--expect demo_pkg=src/demo_pkg`. Quote the whole argument if its path contains spaces. |
 | `--cwd` does not exist | Correct the directory or invoke from the project root without `--cwd`. Expected paths start there; report paths start at the original invocation directory. |
 | `TARGET_NOT_OBSERVED` | Check the import spelling and test selection. Select tests that use that package in this process. A child-process import is outside scope. Do not remove the target just to get green. |
 | `ORIGIN_UNRESOLVED`, metadata conflict, non-filesystem origin | An import may have happened but its source metadata was insufficient or inconsistent. Inspect `--show-all` / JSON and custom loaders or test code that replaces module metadata. This is not the same as no import. |
@@ -52,3 +52,20 @@ and are exercised by the candidate onboarding checks.
 Include the symptom, expected result, tool/Python/pytest versions and a small reproducer.
 JSON is optional. Redact usernames, company directories, secrets, private source and sensitive
 command arguments before sharing. Never post full environment variables or credentials.
+
+## Refresh an older source preview
+
+Preview commits share version 0.1.0. First run the normal README installation command to satisfy
+runtime dependencies. If you already had an older preview, then replace only the guard (using the
+same project interpreter); `--no-deps` preserves the dependencies just checked:
+
+```sh
+".venv/bin/python" -m pip install --force-reinstall --no-deps "git+https://github.com/StatXzy7/worktree-import-guard.git@edae3e6fa9a0b065385a080c371c9c17728b4656"
+```
+
+```powershell
+& ".venv\Scripts\python.exe" -m pip install --force-reinstall --no-deps "git+https://github.com/StatXzy7/worktree-import-guard.git@edae3e6fa9a0b065385a080c371c9c17728b4656"
+```
+
+This is not an environment repair or a project reinstall. Source-preview artifact tests verify the
+installed VCS commit and retain an existing supported pytest 8.2.0 across both commands.
