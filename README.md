@@ -1,142 +1,135 @@
 # worktree-import-guard
 
-> Catch Python tests that pass against the wrong Git worktree.
+> Your tests passed. They may have tested another checkout.
 
-You changed code in one checkout, but Python may still import your package from another.
-This tool checks where selected packages were actually loaded from during pytest.
+You changed **feature**, but Python still loaded **main**. Catch that mismatch while pytest runs.
+[简体中文](README.zh-CN.md)
 
-[简体中文](https://github.com/StatXzy7/worktree-import-guard/blob/main/README.zh-CN.md)
-
-This real [demo](https://github.com/StatXzy7/worktree-import-guard/blob/main/examples/cross-worktree-demo/README.md) has **one test**: ordinary pytest
-passes even when the editable install points to the wrong worktree. Excerpt from the B1 Windows demo;
-temporary path prefix replaced by `<demo>` (additional module details omitted):
+A [real recorded example](docs/demo-output.txt), shortened to key lines; `<demo>` replaces its
+temporary directory. This is an example, not a scan of your computer:
 
 ```text
-1 passed in 0.03s
+1. Ordinary pytest:
+1 passed in 0.04s
 
+2. Check wrong source:
 Tests passed.
 WORKTREE IMPORT GUARD: FAIL
-expected: <demo>\feature worktree\src\demo_pkg
-observed: <demo>\main repository\src\demo_pkg\core.py (demo_pkg.core)
+expected: <demo>\feature\src\demo_pkg
+observed: <demo>\main\src\demo_pkg\__init__.py (demo_pkg)
 reason:   CROSS_WORKTREE_IMPORT
-next:     Code was loaded from another worktree. Check the Python environment and the editable install used by this test run.
 
-pytest exit: 0
-guard:      FAIL
+3. Select correct source inside this example:
+Tests passed.
+WORKTREE IMPORT GUARD: PASS
 ```
 
-## Install once, then check your project
+## Install into your existing test environment
 
-**0.1.0 is a release candidate, not a published PyPI release.** For early access, obtain the
-candidate `worktree_import_guard-0.1.0-py3-none-any.whl` from the maintainer. There is no public
-B1 download yet. You do not need to clone this tool, install dev extras, or build it yourself.
+**Public source preview, not a PyPI release.** No need to contact the author or obtain a wheel.
+You need Python with pip, Git, and network access to download source, build dependencies and pytest.
+The commit below is fixed and verified; the project is still alpha.
 
-Run from **your project's root directory**, in the environment where its pytest already works.
-Below, `.venv` is an example of that **existing** environment, not a directory the tool creates.
-Replace it with your actual environment path and replace the wheel path with the file you received.
-Do not create a new environment or reinstall your project just to diagnose it.
+Use the environment where your project's pytest already works. `.venv` below is an example of
+that **existing environment**; replace it with your real path. If you do not have a Python test
+project yet, the recorded example explains the tool without installing anything.
 
 Linux / macOS:
 
 ```sh
-".venv/bin/python" -m pip install "/path/to/worktree_import_guard-0.1.0-py3-none-any.whl"
-".venv/bin/wt-import" --expect demo_pkg=src/demo_pkg -- -q
+".venv/bin/python" -m pip install "git+https://github.com/StatXzy7/worktree-import-guard.git@edae3e6fa9a0b065385a080c371c9c17728b4656"
 ```
 
-Windows PowerShell (no activation or execution-policy change needed):
+Windows PowerShell (no activation or execution-policy changes):
 
 ```powershell
-& ".venv\Scripts\python.exe" -m pip install "C:\path to\worktree_import_guard-0.1.0-py3-none-any.whl"
-& ".venv\Scripts\wt-import.exe" --expect demo_pkg=src/demo_pkg -- -q
+& ".venv\Scripts\python.exe" -m pip install "git+https://github.com/StatXzy7/worktree-import-guard.git@edae3e6fa9a0b065385a080c371c9c17728b4656"
 ```
 
-Use your package's import name and directory in place of `demo_pkg=src/demo_pkg`.
-The Python and `wt-import` paths must belong to the **same environment**. Quote executable paths
-and whole arguments containing spaces, e.g. `--expect "demo_pkg=source tree/demo_pkg"`.
-Installation can install or adjust dependencies (including pytest). The check itself does not
-repair installs or change import paths; your tests still execute and may have side effects.
+Installation satisfies the tool's pytest requirement; already supported dependencies are retained.
+**Upgrading an earlier 0.1.0 preview?** After this install, follow the
+[guard-only refresh command](docs/troubleshooting.md#refresh-an-older-source-preview) to replace the
+same-version tool without reinstalling pytest. If this exact preview is already installed, skip
+installation. During an incident, do not sync or repair the target project first.
 
-For an incident, if the tool is already installed, run **only the check command** first. Do not
-sync or reinstall the target project before inspecting it. For routine development, follow your
-project's dependency setup first. [uv and missing-command help](https://github.com/StatXzy7/worktree-import-guard/blob/main/docs/troubleshooting.md).
-`pipx`, `uvx` and `uv tool install` use separate tool environments and are not the recommended
-way to inspect your existing pytest environment.
+## Choose an entry
 
-The [release notes draft](https://github.com/StatXzy7/worktree-import-guard/blob/main/docs/releasing/0.1.0-notes.md) contains the shorter PyPI install command
-for activation **after publication**. Candidate installation is not a PyPI download test.
+| First, see what it does | Check my project |
+| --- | --- |
+| `wt-import --demo` | `wt-import --setup` |
+| Runs an offline, private example with the installed tool. | Confirms project/environment, package directories, then saving and running tests. |
 
-## What goes in --expect?
+Use the executable in the same environment as the Python above:
 
-For a **src layout**:
-
-```text
-project/
-  src/
-    demo_pkg/
-      __init__.py
-  tests/
+```sh
+".venv/bin/wt-import" --demo
+".venv/bin/wt-import" --setup
+# After setup, repeat checks without re-entering directories:
+".venv/bin/wt-import" -- -q
 ```
 
-Use `--expect demo_pkg=src/demo_pkg`.
-
-For a **flat layout**:
-
-```text
-project/
-  demo_pkg/
-    __init__.py
-  tests/
+```powershell
+& ".venv\Scripts\wt-import.exe" --demo
+& ".venv\Scripts\wt-import.exe" --setup
+# After setup:
+& ".venv\Scripts\wt-import.exe" -- -q
 ```
 
-Use `--expect demo_pkg=demo_pkg`.
+Run setup from your project's root. Choose package number(s), review the settings, then confirm.
+Setup creates `.wt-import.json`; you do not need to write it. Multiple candidates require a choice,
+and existing files are never overwritten. It never installs, activates or repairs an environment.
+[Settings and unusual layouts](docs/first-use.md).
 
-The left side is the name in `import demo_pkg`; it may differ from the name used by pip.
-The right side is the source **package directory** you want these tests to load. Do not use just
-the repository root or point it at another worktree. Repeat `--expect` for multiple packages,
-e.g. `--expect demo_pkg=src/demo_pkg --expect shared.api=lib/shared/api`.
+The demo deliberately selects a wrong path in a disposable fixture, without inspecting your project.
+With Git it creates real worktrees, otherwise it labels two ordinary directories. It needs no
+downloads after installation. The [maintainer demo](examples/cross-worktree-demo/README.md)
+separately verifies the complete editable-install chain.
 
-Relative expected paths start in the pytest working directory. From a parent directory,
-`--cwd backend --expect demo_pkg=src/demo_pkg` expects `backend/src/demo_pkg` and runs pytest in
-`backend`. If the executable is also inside backend, invoke `"backend/.venv/bin/wt-import"` (or
-`& "backend\.venv\Scripts\wt-import.exe"` in PowerShell). Executable paths are still relative
-to the shell's current directory. Relative `--report-json` paths start in the original invocation
-directory, even with `--cwd`.
+## Read the two results
 
-No `__init__.py`? Read the [namespace limits](https://github.com/StatXzy7/worktree-import-guard/blob/main/docs/runtime-scope.md#namespace-packages).
-
-## Read the result
-
-| Result | Meaning | Next step |
+| Source result | Meaning | Next step |
 | --- | --- | --- |
-| PASS | Observed sources for your selected packages match the requested directories. | Check pytest's separate result; this does not prove test coverage. |
-| FAIL | Observed code came from outside a requested directory. | Compare `expected` and `observed`; inspect the selected environment and editable install. |
-| UNKNOWN | This source check could not be completed. | Read `reason` and `next`: the target may be unobserved, metadata unresolved, or execution unsupported. |
+| PASS | Observed sources for selected packages match your directories. | Check pytest's separate result too. |
+| FAIL | Observed code came from outside a selected directory. | Compare expected/observed and inspect the chosen environment/install. |
+| UNKNOWN | Source checking could not be completed. | Read reason/next: the target may be unobserved or its source unresolved. |
 
-UNKNOWN is never a pass. The report shows each selected package and its expected directory.
-`--show-all` also shows matching modules. `--report-json provenance.json` saves detailed evidence;
-use an existing writable directory and redact paths before sharing it.
+**Tests failed + source PASS still means the tests failed. UNKNOWN is never a pass.**
+Native nonzero pytest exits are preserved. With pytest exit 0, source PASS / FAIL / UNKNOWN exit
+0 / 1 / 2. No tests preserves pytest exit 5. JSON write failures do not hide pytest failures.
 
-If pytest fails but the guard says PASS, **the tests failed and the observed sources matched**.
-All native nonzero pytest exits are preserved, including exit 6 where pytest supports it.
-When pytest exits 0, guard PASS / FAIL / UNKNOWN exit 0 / 1 / 2. A JSON write failure exits 2
-when pytest succeeded, otherwise preserving pytest's nonzero exit.
+## Scope and requirements
 
-## Common questions and limits
+Tested with CPython 3.10–3.13 and pytest >=8.2,<10 on Windows and POSIX CI. Only selected packages,
+their observed submodules, and this supported pytest process are checked. Unexecuted code, coverage,
+commit-content equality and child-process imports are not verified. Active xdist and multi-root
+namespaces are unsupported. A worktree mismatch requires Git evidence. This is not a sandbox;
+your tests still execute and may have side effects.
 
-- Only explicitly selected packages, their observed submodules, and this supported pytest process
-  are checked. Unexecuted code and child-process-only imports are not verified.
-- Active pytest-xdist is unsupported; run one process (`-n 0` when xdist is installed).
-- A mismatch is called “another worktree” only when Git confirms the relationship.
-- This does not prove coverage, code equality to a commit, or complete environment isolation.
-- It does not fix your environment and is not a sandbox. Run tests you trust or are authorized to run.
+Use the project's actual environment. `pipx`, `uvx` and `uv tool install` create separate tool
+environments and are not recommended here. [Troubleshooting, including uv](docs/troubleshooting.md).
 
-See [troubleshooting](https://github.com/StatXzy7/worktree-import-guard/blob/main/docs/troubleshooting.md) for missing commands, arguments, UNKNOWN and JSON errors.
-Want to see it before checking your own code? The [disposable demo](https://github.com/StatXzy7/worktree-import-guard/blob/main/examples/cross-worktree-demo/README.md)
-creates its own two worktrees and environment and checks all three expected outcomes.
+## Explicit checks and details
 
-## Details and contributing
+For automation or a one-off check, no setup or config is needed:
 
-[Runtime scope](https://github.com/StatXzy7/worktree-import-guard/blob/main/docs/runtime-scope.md) · [JSON schema v2](https://github.com/StatXzy7/worktree-import-guard/blob/main/docs/json-schema-v2.md) ·
-[Contributing](https://github.com/StatXzy7/worktree-import-guard/blob/main/CONTRIBUTING.md) · [Security](https://github.com/StatXzy7/worktree-import-guard/blob/main/SECURITY.md) · [Changelog](https://github.com/StatXzy7/worktree-import-guard/blob/main/CHANGELOG.md) ·
-[Release checklist](https://github.com/StatXzy7/worktree-import-guard/blob/main/docs/releasing/README.md) · [Historical B0 evidence](https://github.com/StatXzy7/worktree-import-guard/blob/main/docs/release-readiness/b0-readiness.md) ·
-[Benchmarks](https://github.com/StatXzy7/worktree-import-guard/blob/main/benchmarks/README.md)
+```sh
+wt-import --expect demo_pkg=src/demo_pkg -- -q
+```
+
+Flat layout: `--expect demo_pkg=demo_pkg`. Use the Python import name, not necessarily the pip name,
+and the source **package directory**, not the repository root. Repeat `--expect` for multiple
+packages. Explicit targets replace all saved targets for that run. Quote mappings with spaces.
+
+`--cwd backend` changes the pytest directory and base for explicit relative expectations. Config
+paths are relative to their config file. `--report-json provenance.json` saves UTF-8 evidence
+relative to the original invocation directory; `--show-all` includes matching origins.
+Without config or explicit targets, CI exits 2 immediately; setup needs an interactive terminal.
+
+[Existing pytest workflow](docs/pytest-workflow.md) · [First-use details](docs/first-use.md) ·
+[Runtime scope](docs/runtime-scope.md) · [JSON schema v2](docs/json-schema-v2.md) ·
+[Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) · [Changelog](CHANGELOG.md) ·
+[Benchmarks](benchmarks/README.md) · [Publication step](docs/releasing/README.md)
+
+The pinned source revision predates this homepage rewrite, so its packaged README still contains
+the older installation text. Use this repository homepage for the current entry points, or the
+[documentation at the preview revision](https://github.com/StatXzy7/worktree-import-guard/tree/edae3e6fa9a0b065385a080c371c9c17728b4656/docs).

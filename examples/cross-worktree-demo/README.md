@@ -1,8 +1,10 @@
-# One-command wrong-worktree demo
+# Maintainer editable-install demo
 
 This is optional. Checking your own project does not require this demo.
 
-Obtain `run.py` (this directory) and the candidate wheel from the maintainer. Save them locally.
+For the installed offline experience, use `wt-import --demo` after the [public preview installation](../../README.md).
+This separate maintainer test requires a checkout of this repository and a wheel built with
+`python -m build`; `run.py` is in this directory. It verifies the real PEP 660 chain.
 With Python 3.10–3.13 including venv/pip and Git on PATH, run from the directory containing run.py:
 
 ```sh
