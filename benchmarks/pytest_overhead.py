@@ -8,6 +8,7 @@ import os
 import statistics
 import subprocess
 import sys
+import sysconfig
 import tempfile
 import time
 from pathlib import Path
@@ -16,7 +17,7 @@ from typing import Any
 
 def console_script(name: str) -> Path:
     suffix = ".exe" if sys.platform == "win32" else ""
-    path = Path(sys.executable).with_name(f"{name}{suffix}")
+    path = Path(sysconfig.get_path("scripts")) / f"{name}{suffix}"
     if not path.is_file():
         raise SystemExit(f"required console script is missing: {path}")
     return path
