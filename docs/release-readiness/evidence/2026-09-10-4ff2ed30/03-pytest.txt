@@ -1,0 +1,7 @@
+COMMAND=.venv\\Scripts\\pytest.exe -q -rs
+CWD=D:\worktree-import-guard
+s..............................................                          [100%]
+=========================== short test summary info ===========================
+SKIPPED [1] tests\artifact\test_installed_worktrees.py:115: set WTIG_RUN_ARTIFACT_TESTS=1 to run installation smoke tests
+46 passed, 1 skipped in 25.78s
+EXIT_CODE=0

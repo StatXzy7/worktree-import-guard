@@ -1,0 +1,19 @@
+COMMAND=.venv\\Scripts\\python.exe -m build --outdir D:\worktree-import-guard\dist\b0-4ff2ed30652f70b4ee1e115e6626ad63ced7166a
+CWD=D:\worktree-import-guard
+* Creating isolated environment: venv+pip...
+* Installing packages in isolated environment:
+  - hatchling>=1.25
+* Getting build dependencies for sdist...
+* Installed build dependency versions:
+  - hatchling==1.32.0
+* Building sdist...
+* Building wheel from sdist
+* Creating isolated environment: venv+pip...
+* Installing packages in isolated environment:
+  - hatchling>=1.25
+* Getting build dependencies for wheel...
+* Installed build dependency versions:
+  - hatchling==1.32.0
+* Building wheel...
+Successfully built worktree_import_guard-0.1.0.tar.gz and worktree_import_guard-0.1.0-py3-none-any.whl
+EXIT_CODE=0

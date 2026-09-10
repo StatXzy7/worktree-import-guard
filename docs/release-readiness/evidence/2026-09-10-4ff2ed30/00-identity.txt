@@ -1,0 +1,38 @@
+TIMESTAMP=2026-09-10T19:23:35.3159066+08:00
+COMMAND=git status; git rev-parse HEAD; environment identity
+CWD=D:\worktree-import-guard
+## codex/b0-release-candidate
+4ff2ed30652f70b4ee1e115e6626ad63ced7166a
+origin	https://github.com/StatXzy7/worktree-import-guard.git (fetch)
+origin	https://github.com/StatXzy7/worktree-import-guard.git (push)
+Python 3.13.5 (tags/v3.13.5:6cb20a2, Jun 11 2025, 16:15:46) [MSC v.1943 64 bit (AMD64)]
+sys.executable=D:\worktree-import-guard\.venv\Scripts\python.exe
+resolved=D:\worktree-import-guard\.venv\Scripts\python.exe
+sys.prefix=D:\worktree-import-guard\.venv
+sys.base_prefix=C:\Python313
+purelib=D:\worktree-import-guard\.venv\Lib\site-packages
+package=D:\worktree-import-guard\src\worktree_import_guard\__init__.py
+pytest=9.1.1
+ast_serialize==0.11.1
+build==1.6.0
+colorama==0.4.6
+coverage==7.16.0
+execnet==2.1.2
+iniconfig==2.3.0
+librt==0.15.0
+mypy==2.3.1
+mypy_extensions==1.1.0
+packaging==26.3
+pathspec==1.1.1
+pip==26.2.1
+pluggy==1.6.0
+Pygments==2.21.0
+pyproject_hooks==1.2.0
+pytest==9.1.1
+pytest-asyncio==1.3.0
+pytest-cov==7.1.0
+pytest-xdist==3.8.0
+ruff==0.16.6
+typing_extensions==4.16.0
+worktree-import-guard==0.1.0
+EXIT_CODE=0

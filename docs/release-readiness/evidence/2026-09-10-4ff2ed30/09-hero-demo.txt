@@ -1,0 +1,34 @@
+COMMAND=.venv\\Scripts\\python.exe examples/cross-worktree-demo/run.py --wheel D:\worktree-import-guard\dist\b0-4ff2ed30652f70b4ee1e115e6626ad63ced7166a\worktree_import_guard-0.1.0-py3-none-any.whl
+CWD=D:\worktree-import-guard
+ORDINARY PYTEST (stale main editable, expected exit 0)
+.                                                                        [100%]
+1 passed in 0.02s
+
+GUARD (stale main editable, expected exit 1)
+.                                                                        [100%]
+1 passed in 0.02s
+WORKTREE IMPORT GUARD: FAIL
+
+demo_pkg
+expected: d:\temp\wtig-demo-dhkepx93\feature worktree\src\demo_pkg
+observed: D:\temp\wtig-demo-dhkepx93\main repository\src\demo_pkg\__init__.py (demo_pkg)
+worktree: d:\temp\wtig-demo-dhkepx93\main repository
+observed: D:\temp\wtig-demo-dhkepx93\main repository\src\demo_pkg\core.py (demo_pkg.core)
+worktree: d:\temp\wtig-demo-dhkepx93\main repository
+reason:   CROSS_WORKTREE_IMPORT
+
+pytest exit: 0
+guard:      FAIL
+
+GUARD (feature editable, expected exit 0)
+.                                                                        [100%]
+1 passed in 0.02s
+WORKTREE IMPORT GUARD: PASS
+
+targets: demo_pkg
+
+pytest exit: 0
+guard:      PASS
+
+Demo passed; the temporary repository and environment were removed.
+EXIT_CODE=0

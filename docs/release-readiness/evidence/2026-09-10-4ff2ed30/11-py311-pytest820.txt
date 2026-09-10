@@ -1,0 +1,73 @@
+COMMAND=Python 3.11 clean venv; resolve -e .[dev] with pytest==8.2.0 together; pytest -q -rs
+CWD=D:\worktree-import-guard
+Obtaining file:///D:/worktree-import-guard
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Checking if build backend supports build_editable: started
+  Checking if build backend supports build_editable: finished with status 'done'
+  Getting requirements to build editable: started
+  Getting requirements to build editable: finished with status 'done'
+  Installing backend dependencies: started
+  Installing backend dependencies: finished with status 'done'
+  Preparing editable metadata (pyproject.toml): started
+  Preparing editable metadata (pyproject.toml): finished with status 'done'
+Collecting pytest==8.2.0
+  Using cached pytest-8.2.0-py3-none-any.whl (339 kB)
+Collecting iniconfig
+  Using cached iniconfig-2.3.0-py3-none-any.whl (7.5 kB)
+Collecting packaging
+  Using cached packaging-26.3-py3-none-any.whl (129 kB)
+Collecting pluggy<2.0,>=1.5
+  Using cached pluggy-1.6.0-py3-none-any.whl (20 kB)
+Collecting colorama
+  Using cached colorama-0.4.6-py2.py3-none-any.whl (25 kB)
+Collecting build>=1.2
+  Using cached build-1.6.1-py3-none-any.whl (31 kB)
+Collecting mypy>=1.11
+  Using cached mypy-2.3.1-cp311-cp311-win_amd64.whl (11.1 MB)
+Collecting pytest-asyncio<1.4,>=0.23
+  Using cached pytest_asyncio-1.3.0-py3-none-any.whl (15 kB)
+Collecting pytest-cov>=5
+  Using cached pytest_cov-7.1.0-py3-none-any.whl (22 kB)
+Collecting pytest-xdist>=3.6
+  Using cached pytest_xdist-3.8.0-py3-none-any.whl (46 kB)
+Collecting ruff>=0.6
+  Using cached ruff-0.16.6-py3-none-win_amd64.whl (10.6 MB)
+Collecting pyproject_hooks
+  Using cached pyproject_hooks-1.2.0-py3-none-any.whl (10 kB)
+Collecting typing_extensions>=4.6.0
+  Using cached typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+Collecting mypy_extensions>=1.0.0
+  Using cached mypy_extensions-1.1.0-py3-none-any.whl (5.0 kB)
+Collecting pathspec>=1.0.0
+  Using cached pathspec-1.1.1-py3-none-any.whl (57 kB)
+Collecting librt>=0.13.0
+  Using cached librt-0.15.0-cp311-cp311-win_amd64.whl (125 kB)
+Collecting ast-serialize<1.0.0,>=0.6.0
+  Using cached ast_serialize-0.11.1-cp39-abi3-win_amd64.whl (1.2 MB)
+Collecting coverage[toml]>=7.10.6
+  Using cached coverage-7.16.0-cp311-cp311-win_amd64.whl (225 kB)
+Collecting execnet>=2.1
+  Using cached execnet-2.1.2-py3-none-any.whl (40 kB)
+Building wheels for collected packages: worktree-import-guard
+  Building editable for worktree-import-guard (pyproject.toml): started
+  Building editable for worktree-import-guard (pyproject.toml): finished with status 'done'
+  Created wheel for worktree-import-guard: filename=worktree_import_guard-0.1.0-py3-none-any.whl size=6354 sha256=966d937cf7f470a34fcb9168a733ad4acc3076cab26989aa8d57baf3df767cd8
+  Stored in directory: D:\temp\pip-ephem-wheel-cache-3u9ekiul\wheels\0e\eb\81\5ad076e05828dd699ef4d2e689d43a904267315303e912f4e1
+Successfully built worktree-import-guard
+Installing collected packages: typing_extensions, ruff, pyproject_hooks, pluggy, pathspec, packaging, mypy_extensions, librt, iniconfig, execnet, coverage, colorama, ast-serialize, pytest, mypy, build, worktree-import-guard, pytest-xdist, pytest-cov, pytest-asyncio
+Successfully installed ast-serialize-0.11.1 build-1.6.1 colorama-0.4.6 coverage-7.16.0 execnet-2.1.2 iniconfig-2.3.0 librt-0.15.0 mypy-2.3.1 mypy_extensions-1.1.0 packaging-26.3 pathspec-1.1.1 pluggy-1.6.0 pyproject_hooks-1.2.0 pytest-8.2.0 pytest-asyncio-1.3.0 pytest-cov-7.1.0 pytest-xdist-3.8.0 ruff-0.16.6 typing_extensions-4.16.0 worktree-import-guard-0.1.0
+Python 3.11.1 (tags/v3.11.1:a7a450f, Dec  6 2022, 19:58:39) [MSC v.1934 64 bit (AMD64)]
+pytest=8.2.0
+pytest-cov=7.1.0
+pytest-asyncio=1.3.0
+pytest-xdist=3.8.0
+D:\temp\wtig-b0-4ff2ed30-py311-pytest820\Lib\site-packages\pytest_asyncio\plugin.py:247: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+The event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
+
+  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
+s..............................................                          [100%]
+=========================== short test summary info ===========================
+SKIPPED [1] tests\artifact\test_installed_worktrees.py:115: set WTIG_RUN_ARTIFACT_TESTS=1 to run installation smoke tests
+46 passed, 1 skipped in 24.09s
+EXIT_CODE=0

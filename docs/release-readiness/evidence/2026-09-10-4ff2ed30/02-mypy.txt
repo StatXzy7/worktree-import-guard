@@ -1,0 +1,4 @@
+COMMAND=.venv\\Scripts\\mypy.exe src
+CWD=D:\worktree-import-guard
+Success: no issues found in 10 source files
+EXIT_CODE=0

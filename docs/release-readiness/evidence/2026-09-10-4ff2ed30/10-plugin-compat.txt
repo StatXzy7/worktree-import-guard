@@ -1,0 +1,16 @@
+COMMAND=plugin versions; .venv\\Scripts\\pytest.exe tests/compat -q -rA
+CWD=D:\worktree-import-guard
+CONFIG=pyproject.toml [tool.pytest.ini_options]
+pytest=9.1.1
+pytest-cov=7.1.0
+pytest-asyncio=1.3.0
+pytest-xdist=3.8.0
+....                                                                     [100%]
+=================================== PASSES ====================================
+=========================== short test summary info ===========================
+PASSED tests/compat/test_plugins.py::test_pytest_cov_native_and_guarded_runs
+PASSED tests/compat/test_plugins.py::test_pytest_asyncio_guarded_run
+PASSED tests/compat/test_plugins.py::test_importlib_mode_correct_and_wrong_origins
+PASSED tests/compat/test_plugins.py::test_xdist_installed_inactive_n0_and_active_rejection
+4 passed in 7.78s
+EXIT_CODE=0

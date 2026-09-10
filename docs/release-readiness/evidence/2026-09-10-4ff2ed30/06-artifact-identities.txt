@@ -1,0 +1,5 @@
+COMMAND=Get-ChildItem candidate artifacts; Get-FileHash SHA256
+CWD=D:\worktree-import-guard
+worktree_import_guard-0.1.0-py3-none-any.whl	20761	48f8b457a84f4fcfaa01f66e757ee6da8fee2088e078b4b425cabdb98681f240	D:\worktree-import-guard\dist\b0-4ff2ed30652f70b4ee1e115e6626ad63ced7166a\worktree_import_guard-0.1.0-py3-none-any.whl
+worktree_import_guard-0.1.0.tar.gz	36344	997be746445603bbc726e801cf6afa9042aa42e8615be5639eb88abac2110629	D:\worktree-import-guard\dist\b0-4ff2ed30652f70b4ee1e115e6626ad63ced7166a\worktree_import_guard-0.1.0.tar.gz
+EXIT_CODE=0

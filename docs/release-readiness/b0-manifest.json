@@ -1,0 +1,97 @@
+{
+  "manifest_version": 1,
+  "phase": "B0",
+  "decision": "BLOCKED",
+  "candidate": {
+    "baseline_sha": "dd4c5e468f3b029fab8d196eee36b8a1c9625b88",
+    "source_sha": "4ff2ed30652f70b4ee1e115e6626ad63ced7166a",
+    "source_dirty": false,
+    "branch": "codex/b0-release-candidate",
+    "package_version": "0.1.0",
+    "schema_version": 2
+  },
+  "local_build": {
+    "id": "local-2026-09-10T19:25:22+08:00-4ff2ed30",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.13.5",
+    "pytest": "9.1.1",
+    "build_frontend": "build 1.6.0",
+    "build_backend": "hatchling 1.32.0",
+    "command_log": "evidence/2026-09-10-4ff2ed30/05-build.txt"
+  },
+  "artifacts": [
+    {
+      "filename": "worktree_import_guard-0.1.0-py3-none-any.whl",
+      "path": "dist/b0-4ff2ed30652f70b4ee1e115e6626ad63ced7166a/worktree_import_guard-0.1.0-py3-none-any.whl",
+      "bytes": 20761,
+      "sha256": "48f8b457a84f4fcfaa01f66e757ee6da8fee2088e078b4b425cabdb98681f240",
+      "built_by": "python -m build from candidate source",
+      "validated_by": [
+        "explicit installed-wheel .pth and PEP 660 worktree test",
+        "installed-wheel Hero Demo",
+        "sdist-derived wheel identity and clean-venv installation"
+      ],
+      "logs": [
+        "evidence/2026-09-10-4ff2ed30/07-artifact-test.txt",
+        "evidence/2026-09-10-4ff2ed30/08-sdist-chain.txt",
+        "evidence/2026-09-10-4ff2ed30/09-hero-demo.txt"
+      ],
+      "status": "pass"
+    },
+    {
+      "filename": "worktree_import_guard-0.1.0.tar.gz",
+      "path": "dist/b0-4ff2ed30652f70b4ee1e115e6626ad63ced7166a/worktree_import_guard-0.1.0.tar.gz",
+      "bytes": 36344,
+      "sha256": "997be746445603bbc726e801cf6afa9042aa42e8615be5639eb88abac2110629",
+      "built_by": "python -m build from candidate source",
+      "validated_by": [
+        "wheel rebuilt from sdist outside the repository",
+        "sdist-derived wheel installed in a clean virtual environment",
+        "installed wt-import console script and package origin verified outside the repository"
+      ],
+      "logs": [
+        "evidence/2026-09-10-4ff2ed30/08-sdist-chain.txt"
+      ],
+      "status": "pass"
+    }
+  ],
+  "checks": {
+    "ruff": "pass",
+    "mypy": "pass",
+    "pytest": "pass: 46 passed, 1 intentional artifact skip",
+    "coverage": "pass: 92.42 percent",
+    "explicit_artifact_test": "pass: 1 passed, 0 skipped",
+    "hero_demo": "pass",
+    "schema_v2_golden_cases": "pass",
+    "plugin_compatibility": "pass on recorded local versions",
+    "pytest_minimum_boundary": "pass: Python 3.11.1 and pytest 8.2.0",
+    "pytest_current_upper_boundary": "pass: Python 3.13.5 and pytest 9.1.1",
+    "remote_ci": "blocked: candidate was not pushed and no workflow run exists"
+  },
+  "remote_observation": {
+    "observed_at": "2026-09-10T11:30:35.7939143Z",
+    "repository": "StatXzy7/worktree-import-guard",
+    "default_branch": "main",
+    "main_sha": "dd4c5e468f3b029fab8d196eee36b8a1c9625b88",
+    "branches": ["main"],
+    "workflow_count": 0,
+    "workflow_run_count": 0,
+    "candidate_remote_branch_exists": false,
+    "log": "evidence/2026-09-10-4ff2ed30/12-github-readonly.txt"
+  },
+  "unverified": [
+    "Any real GitHub Actions job, run ID, run attempt, checkout SHA, or uploaded artifact",
+    "Linux and macOS execution of the candidate",
+    "Remote Python 3.10, 3.11, 3.12, and 3.13 matrix combinations",
+    "A pull-request synthetic merge SHA and a final merged commit",
+    "Active distributed pytest-xdist provenance aggregation",
+    "Imports that occur only in child processes",
+    "Plugins other than the recorded pytest-cov, pytest-asyncio, pytest-xdist, and importlib-mode smokes"
+  ],
+  "limitations": [
+    "The guard observes the current single pytest process only.",
+    "Active xdist execution is rejected as unsupported; installed but inactive xdist and -n 0 pass.",
+    "This manifest freezes local candidate files only and does not authorize a release or upload.",
+    "Byte-for-byte reproducibility across different builders is not claimed."
+  ]
+}
