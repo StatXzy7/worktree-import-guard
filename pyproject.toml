@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "worktree-import-guard"
-version = "0.1.0"
+version = "0.1.1"
 description = "Catch Python tests that pass against the wrong Git worktree."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -49,6 +49,7 @@ packages = ["src/worktree_import_guard"]
 [tool.hatch.build.targets.sdist]
 include = [
   "/src",
+  "/skills",
   "/tests",
   "/benchmarks",
   "/docs",

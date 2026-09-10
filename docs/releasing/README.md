@@ -1,7 +1,31 @@
-# Prepare and authorize 0.1.0
+# Publish the 0.1.1 candidate once authorized
 
-Maintainer documentation; normal users only need README. B1 does not authorize a push, merge, tag,
-GitHub Release, package upload or remote configuration.
+Maintainer documentation; normal users only need README. Source PR/merge authorization
+does not authorize tags, GitHub Releases, package uploads or remote configuration.
+Version 0.1.1 distinguishes this candidate from old 0.1.0 source previews. The public
+README remains pinned to the verified preview until a real release is available.
+
+## Remaining external actions (one release operation)
+
+1. Obtain explicit authorization for PyPI upload, release tag/GitHub Release and
+   required Trusted Publisher / GitHub environment configuration. None is implied
+   by merging the source PR. Confirm index ownership; a 404 is not a name reservation.
+2. Configure the publisher for this repository's reviewed manual release workflow,
+   protected `pypi` environment, and the exact approved main commit. Move the existing
+   disabled template only within that authorization. Only the publish job gets OIDC.
+3. Dispatch version 0.1.1 from that exact main; retain the same built/tested wheel
+   and sdist, hashes and CI artifact identity through upload. Create the authorized
+   tag and Release for that source; do not rebuild or rename old candidate artifacts.
+4. Download from the real PyPI index into a new directory, compare both file hashes
+   with the published manifest, install into a fresh environment, verify metadata,
+   --version, help, demo, and positive/wrong-source controls. Only then switch the
+   homepage to `python -m pip install worktree-import-guard==0.1.1` and mark
+   PUBLISHED_AND_SMOKED. A local wheel check does not establish this state.
+
+The artifact test also upgrades the actual pinned 0.1.0 VCS preview to the candidate
+using ordinary pip upgrade. It compares all other installed distribution versions
+and RECORD mtimes, retaining supported pytest 8.2.0 in that disposable environment.
+This is a measured scenario, not a promise of zero dependency changes everywhere.
 
 ## Candidate checks
 
@@ -49,7 +73,7 @@ tested files; cross-environment bitwise reproducibility is not promised.
 ## Disabled workflow template
 
 [release.yml.example](release.yml.example) is outside Actions discovery. It only accepts manual
-runs on main in this repository and the literal 0.1.0 approval input. It builds once, tests those
+runs on main in this repository and the literal 0.1.1 approval input. It builds once, tests those
 exact files on Ubuntu and Windows, then publishes after both jobs and environment approval.
 The publish job downloads artifacts from the same run, verifies trusted build-job hashes and never
 rebuilds or accepts a user-provided run ID. PRs and ordinary pushes cannot publish. The input does

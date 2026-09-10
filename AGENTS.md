@@ -20,6 +20,10 @@ Never hide UNKNOWN, infer PASS from a suggestion, or automatically repair a user
 - Diagnose without repairing the environment or expanding into environment management.
 - Keep onboarding short; put schemas, benchmarks, and release evidence in maintainer docs.
 - Prefer small, reliable changes that reduce a concrete installation or diagnosis problem.
+- Keep one detection engine with CLI and thin Agent Skill entry points.
+- Measure first-use completion, correct interpretation and repeat use with real users;
+  file counts, stars and downloads do not establish usefulness.
+- Do not imply coverage, commit-content equality, isolation or tamper resistance from source PASS.
 
 ## Text encoding
 

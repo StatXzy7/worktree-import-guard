@@ -1,0 +1,4 @@
+interface:
+  display_name: "Verify worktree imports"
+  short_description: "Check which source your pytest run actually used"
+  default_prompt: "Use $verify-worktree-imports to check this project's pytest source paths without repairing the environment."

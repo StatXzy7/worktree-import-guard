@@ -1,11 +1,11 @@
 # DISABLED: authorize, configure environment protection and review before moving into .github/workflows.
-name: Publish approved 0.1.0
+name: Publish approved 0.1.1
 
 on:
   workflow_dispatch:
     inputs:
       approve_version:
-        description: Enter 0.1.0 after approving this source for release
+        description: Enter 0.1.1 after approving this source for release
         required: true
         type: string
 
@@ -13,14 +13,14 @@ permissions:
   contents: read
 
 concurrency:
-  group: publish-0.1.0
+  group: publish-0.1.1
   cancel-in-progress: false
 
 jobs:
   build:
     if: >-
       github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' &&
-      github.repository == 'StatXzy7/worktree-import-guard' && inputs.approve_version == '0.1.0'
+      github.repository == 'StatXzy7/worktree-import-guard' && inputs.approve_version == '0.1.1'
     runs-on: ubuntu-latest
     outputs:
       wheel_sha: ${{ steps.hashes.outputs.wheel_sha }}
@@ -41,8 +41,8 @@ jobs:
         run: |
           test "$(git status --porcelain | wc -l)" -eq 0
           test "$(find dist -maxdepth 1 -type f | wc -l)" -eq 2
-          echo "wheel_sha=$(sha256sum dist/worktree_import_guard-0.1.0-py3-none-any.whl | cut -d ' ' -f1)" >> "$GITHUB_OUTPUT"
-          echo "sdist_sha=$(sha256sum dist/worktree_import_guard-0.1.0.tar.gz | cut -d ' ' -f1)" >> "$GITHUB_OUTPUT"
+          echo "wheel_sha=$(sha256sum dist/worktree_import_guard-0.1.1-py3-none-any.whl | cut -d ' ' -f1)" >> "$GITHUB_OUTPUT"
+          echo "sdist_sha=$(sha256sum dist/worktree_import_guard-0.1.1.tar.gz | cut -d ' ' -f1)" >> "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: release-files
@@ -70,7 +70,7 @@ jobs:
         env:
           WHEEL_SHA: ${{ needs.build.outputs.wheel_sha }}
           SDIST_SHA: ${{ needs.build.outputs.sdist_sha }}
-        run: python -c "import hashlib,os,pathlib; d=pathlib.Path('dist'); assert hashlib.sha256((d/'worktree_import_guard-0.1.0-py3-none-any.whl').read_bytes()).hexdigest()==os.environ['WHEEL_SHA']; assert hashlib.sha256((d/'worktree_import_guard-0.1.0.tar.gz').read_bytes()).hexdigest()==os.environ['SDIST_SHA']"
+        run: python -c "import hashlib,os,pathlib; d=pathlib.Path('dist'); assert hashlib.sha256((d/'worktree_import_guard-0.1.1-py3-none-any.whl').read_bytes()).hexdigest()==os.environ['WHEEL_SHA']; assert hashlib.sha256((d/'worktree_import_guard-0.1.1.tar.gz').read_bytes()).hexdigest()==os.environ['SDIST_SHA']"
       - run: python docs/releasing/check_candidate.py --dist dist --output "${{ runner.temp }}/release-check"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
@@ -86,7 +86,7 @@ jobs:
     needs: [build, test-files]
     if: >-
       github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' &&
-      github.repository == 'StatXzy7/worktree-import-guard' && inputs.approve_version == '0.1.0'
+      github.repository == 'StatXzy7/worktree-import-guard' && inputs.approve_version == '0.1.1'
     runs-on: ubuntu-latest
     environment:
       name: pypi
@@ -104,7 +104,7 @@ jobs:
         shell: bash
         run: |
           test "$(find dist -maxdepth 1 -type f | wc -l)" -eq 2
-          printf '%s  %s\n' "$WHEEL_SHA" dist/worktree_import_guard-0.1.0-py3-none-any.whl "$SDIST_SHA" dist/worktree_import_guard-0.1.0.tar.gz | sha256sum --check --strict
+          printf '%s  %s\n' "$WHEEL_SHA" dist/worktree_import_guard-0.1.1-py3-none-any.whl "$SDIST_SHA" dist/worktree_import_guard-0.1.1.tar.gz | sha256sum --check --strict
       - uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33
         with:
           packages-dir: dist/

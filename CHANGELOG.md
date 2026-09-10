@@ -2,7 +2,14 @@
 
 All notable changes to this project are documented here.
 
-## 0.1.0 — Unreleased candidate
+## 0.1.1 — Unreleased candidate
+
+- Add an experimental, independently installable `verify-worktree-imports` Skill.
+- Bind each guarded run to a fresh report and checked runtime/target identity.
+- Distinguish this candidate from same-version 0.1.0 source previews; retain report schema v2.
+- Add preview-upgrade verification and a real-user pilot script (no participant results yet).
+
+## 0.1.0 — Source previews, not a PyPI release
 
 ### First use and audit fixes
 
