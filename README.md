@@ -18,18 +18,39 @@ editable install, stale environment entry, or another checkout instead of the wo
 
 ## Install and use
 
-Install the command into the Python environment whose pytest run you want to inspect:
+Until the first package release, install from an authorized checkout into the Python environment
+whose pytest run you want to inspect:
 
 ```console
-python -m pip install worktree-import-guard
+python -m pip install -e .
 .venv/bin/wt-import --expect acme=src/acme -- -q
 ```
 
-On Windows, the executable is normally `.venv\Scripts\wt-import.exe`. With `uv`, use:
+You can also install a locally built candidate with
+`python -m pip install dist/worktree_import_guard-0.1.0-py3-none-any.whl`. After the package is
+actually published, `python -m pip install worktree-import-guard` will be the PyPI installation
+form; it is not presented here as an already available release.
+
+On Windows, the executable is normally `.venv\Scripts\wt-import.exe`.
+
+For a routine `uv` project run, prepare/sync the project environment first and then invoke the
+command:
 
 ```console
+uv sync
 uv run wt-import --expect acme=src/acme -- -q
 ```
+
+`uv run` normally checks and syncs the project environment. For incident diagnosis of an existing
+possibly stale environment, invoke its already-installed console script directly:
+
+```console
+.venv/bin/wt-import --expect acme=src/acme -- -q
+```
+
+On Windows use `.venv\Scripts\wt-import.exe`. After confirming that `uv` selects that exact
+environment and that the command is already installed, `uv run --no-sync wt-import ...` is an
+alternative. `--locked` controls lockfile changes; it does not disable environment syncing.
 
 The command deliberately has no `--python` option. The environment is selected by the
 `wt-import` executable you invoke. It calls `pytest.main(...)` in that process and neither changes
@@ -59,6 +80,8 @@ Each target is `pass`, `fail`, or `unknown`:
 
 Unknown never means pass. If pytest succeeds, guard pass/fail/unknown produce process exits 0/1/2.
 An ordinary pytest test failure remains exit 1. Native pytest exits 2, 3, 4, and 5 are preserved.
+If JSON writing also fails, the existing nonzero pytest exit remains authoritative and the report
+error is printed to stderr; with pytest exit 0, a report-write failure exits 2.
 
 Use `--show-all` to include matching origins in human output. Use `--report-json PATH` for the
 stable schema-versioned report:
@@ -66,6 +89,12 @@ stable schema-versioned report:
 ```console
 wt-import --expect acme=src/acme --report-json provenance.json -- -q
 ```
+
+Schema v2 records the invoked virtual-environment identity (`python`, `sys_prefix`) separately
+from the resolved interpreter binary, plus Python/pytest versions and observation metrics.
+`guard.complete` means every target has determinate evidence; `guard.observation_complete` means
+the supported observation lifecycle ran to completion. See
+[`docs/json-schema-v2.md`](docs/json-schema-v2.md) and the golden reports under `tests/golden`.
 
 Git context is best effort. When the expected and wrong origins belong to different worktrees in
 the same `git worktree list --porcelain -z` result, the reason is `CROSS_WORKTREE_IMPORT`.
@@ -89,7 +118,8 @@ UNSUPPORTED_RUNTIME
 ## What is observed
 
 The command installs observation before lazily importing pytest. It combines CPython audit import
-events with retained `sys.modules` snapshots at import returns and pytest lifecycle boundaries.
+events with incremental target capture at import returns and full `sys.modules` snapshots at
+observer/pytest lifecycle boundaries. Cached unrelated imports do not scan the full module table.
 For each selected package and loaded submodule, it evaluates `__spec__.origin`, `__file__`, and
 namespace search locations. Canonical path operations handle dot segments, symlinks, Windows case
 normalization, separators, spaces, and component boundaries; string-prefix containment is never
@@ -114,9 +144,29 @@ V0.1 observes only the current, single pytest process.
 Pytest executes arbitrary repository code. Use this tool only for trusted or authorized test
 execution; hostile code in the same process can interfere with diagnostics.
 
+## Reproducible demo and performance probes
+
+The installed-wheel demo creates and removes its own temporary Git repository, two worktrees, and
+shared virtual environment:
+
+```console
+python -m build
+python examples/cross-worktree-demo/run.py --wheel dist
+```
+
+Independent observer and end-to-end pytest benchmark scripts retain all samples and report medians
+plus ranges:
+
+```console
+python benchmarks/observer_imports.py --repeats 7
+python benchmarks/pytest_overhead.py --repeats 7
+```
+
+These synthetic probes are regression evidence, not a universal performance claim. See
+[`benchmarks/README.md`](benchmarks/README.md) for their measured fields and limitations.
+
 ## Development
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). The real-worktree integration test constructs a temporary
 main and feature worktree, deliberately resolves `demo_pkg` to main while running in feature, and
 proves that ordinary pytest passes while the guard reports `CROSS_WORKTREE_IMPORT`.
-

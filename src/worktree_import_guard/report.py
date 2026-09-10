@@ -85,33 +85,32 @@ def classify(
     for contract in contracts:
         observations = _resolve_target(contract, observer, git)
         reasons: tuple[ReasonCode, ...]
-        if observer.unsupported_reason is not None:
+        inside = any(item.inside_expected is True for item in observations)
+        outside = any(item.inside_expected is False for item in observations)
+        issues = {item.issue for item in observations if item.issue is not None}
+        if outside:
+            status = Status.FAIL
+            if inside:
+                reasons = (ReasonCode.MIXED_ORIGINS,)
+            elif _is_cross_worktree(contract, observations, git):
+                reasons = (ReasonCode.CROSS_WORKTREE_IMPORT,)
+            else:
+                reasons = (ReasonCode.OUTSIDE_EXPECTED_ROOT,)
+        elif observer.unsupported_reason is not None:
             status = Status.UNKNOWN
             reasons = (observer.unsupported_reason,)
+        elif issues:
+            status = Status.UNKNOWN
+            reasons = _ordered_reasons(issues)
+        elif inside:
+            status = Status.PASS
+            reasons = (ReasonCode.MATCH,)
+        elif observer.was_audited(contract.package):
+            status = Status.UNKNOWN
+            reasons = (ReasonCode.ORIGIN_UNRESOLVED,)
         else:
-            inside = any(item.inside_expected is True for item in observations)
-            outside = any(item.inside_expected is False for item in observations)
-            issues = {item.issue for item in observations if item.issue is not None}
-            if outside:
-                status = Status.FAIL
-                if inside:
-                    reasons = (ReasonCode.MIXED_ORIGINS,)
-                elif _is_cross_worktree(contract, observations, git):
-                    reasons = (ReasonCode.CROSS_WORKTREE_IMPORT,)
-                else:
-                    reasons = (ReasonCode.OUTSIDE_EXPECTED_ROOT,)
-            elif issues:
-                status = Status.UNKNOWN
-                reasons = _ordered_reasons(issues)
-            elif inside:
-                status = Status.PASS
-                reasons = (ReasonCode.MATCH,)
-            elif observer.was_audited(contract.package):
-                status = Status.UNKNOWN
-                reasons = (ReasonCode.ORIGIN_UNRESOLVED,)
-            else:
-                status = Status.UNKNOWN
-                reasons = (ReasonCode.TARGET_NOT_OBSERVED,)
+            status = Status.UNKNOWN
+            reasons = (ReasonCode.TARGET_NOT_OBSERVED,)
         targets.append(
             TargetResult(
                 package=contract.package,
@@ -131,8 +130,13 @@ def classify(
         overall = Status.PASS
     return GuardResult(
         status=overall,
-        complete=observer.unsupported_reason is None,
+        complete=all(
+            target.status is not Status.UNKNOWN
+            and all(observation.issue is None for observation in target.observations)
+            for target in targets
+        ),
         targets=tuple(targets),
+        observation_complete=observer.unsupported_reason is None,
     )
 
 
@@ -158,17 +162,26 @@ def report_dict(report: RunReport) -> dict[str, object]:
     """Return the stable schema-versioned JSON-compatible shape."""
 
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "tool": {"name": "worktree-import-guard", "version": __version__},
         "run": {
             "cwd": str(report.cwd),
             "python": str(report.python),
+            "python_resolved": (
+                str(report.python_resolved) if report.python_resolved is not None else None
+            ),
+            "sys_prefix": report.sys_prefix,
+            "sys_base_prefix": report.sys_base_prefix,
+            "python_version": report.python_version,
+            "pytest_version": report.pytest_version,
             "pytest_args": list(report.pytest_args),
         },
         "pytest": {"exit_code": report.pytest_exit_code},
+        "metrics": report.metrics,
         "guard": {
             "status": report.guard.status.value,
             "complete": report.guard.complete,
+            "observation_complete": report.guard.observation_complete,
         },
         "targets": [
             {

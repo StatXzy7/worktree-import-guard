@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import time
 from typing import Any
 
 from .models import ReasonCode
@@ -13,6 +14,8 @@ class GuardPytestPlugin:
 
     def __init__(self, observer: ImportObserver) -> None:
         self._observer = observer
+        self._collection_started: float | None = None
+        self.collection_seconds: float | None = None
 
     @staticmethod
     def _xdist_requested(config: Any) -> bool:
@@ -34,21 +37,16 @@ class GuardPytestPlugin:
                 "worktree-import-guard 0.1 does not support distributed pytest-xdist execution"
             )
 
+    def pytest_sessionstart(self, session: Any) -> None:
+        del session
+        self._collection_started = time.perf_counter()
+        self._observer.snapshot("pytest-session-start")
+
     def pytest_collection_finish(self, session: Any) -> None:
         del session
+        if self._collection_started is not None:
+            self.collection_seconds = time.perf_counter() - self._collection_started
         self._observer.snapshot("pytest-collection-finish")
-
-    def pytest_runtest_setup(self, item: Any) -> None:
-        del item
-        self._observer.snapshot("pytest-test-setup")
-
-    def pytest_runtest_call(self, item: Any) -> None:
-        del item
-        self._observer.snapshot("pytest-test-call")
-
-    def pytest_runtest_teardown(self, item: Any, nextitem: Any) -> None:
-        del item, nextitem
-        self._observer.snapshot("pytest-test-teardown")
 
     def pytest_sessionfinish(self, session: Any, exitstatus: Any) -> None:
         del session, exitstatus

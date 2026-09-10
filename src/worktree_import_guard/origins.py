@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import re
 from pathlib import Path
 
 from .models import ObservedModule, ReasonCode, ResolvedObservation
@@ -20,26 +21,60 @@ def canonicalize_path(value: str | os.PathLike[str], *, base: Path | None = None
     return Path(os.path.normcase(str(resolved)))
 
 
-def _is_filesystem_origin(value: str | None) -> bool:
+_URI_SCHEME = re.compile(r"^[A-Za-z][A-Za-z0-9+.-]*:")
+_WINDOWS_DRIVE = re.compile(r"^[A-Za-z]:[\\/]")
+
+
+def is_filesystem_origin(value: str | None) -> bool:
+    """Reject import sentinels and URI-like loader origins conservatively."""
+
     if value is None or value in _NON_FILESYSTEM_ORIGINS:
         return False
-    return not (value.startswith("<") and value.endswith(">"))
+    if value.startswith("<") and value.endswith(">"):
+        return False
+    return not (_URI_SCHEME.match(value) and not _WINDOWS_DRIVE.match(value))
+
+
+def freeze_path(value: str | None, *, cwd: Path) -> str | None:
+    """Canonicalize filesystem evidence at observation time."""
+
+    if not is_filesystem_origin(value):
+        return None
+    assert value is not None
+    try:
+        return str(canonicalize_path(value, base=cwd))
+    except (OSError, RuntimeError, ValueError):
+        return None
+
+
+def _observation_path(
+    raw: str | None,
+    frozen: str | None,
+    *,
+    capture_cwd: str | None,
+    paths_frozen: bool,
+) -> Path | None:
+    if paths_frozen:
+        return Path(frozen) if frozen is not None else None
+    if not is_filesystem_origin(raw) or raw is None:
+        return None
+    return canonicalize_path(raw, base=Path(capture_cwd) if capture_cwd is not None else None)
 
 
 def resolve_observation(observation: ObservedModule) -> ResolvedObservation:
     """Resolve raw import metadata without guessing through conflicts."""
 
-    spec_is_path = _is_filesystem_origin(observation.spec_origin)
-    file_is_path = _is_filesystem_origin(observation.file)
-    spec_path = (
-        canonicalize_path(observation.spec_origin)
-        if spec_is_path and observation.spec_origin is not None
-        else None
+    spec_path = _observation_path(
+        observation.spec_origin,
+        observation.canonical_spec_origin,
+        capture_cwd=observation.capture_cwd,
+        paths_frozen=observation.paths_frozen,
     )
-    file_path = (
-        canonicalize_path(observation.file)
-        if file_is_path and observation.file is not None
-        else None
+    file_path = _observation_path(
+        observation.file,
+        observation.canonical_file,
+        capture_cwd=observation.capture_cwd,
+        paths_frozen=observation.paths_frozen,
     )
 
     if spec_path is not None and file_path is not None and spec_path != file_path:
@@ -75,19 +110,28 @@ def resolve_observation(observation: ObservedModule) -> ResolvedObservation:
                 issue=ReasonCode.UNSUPPORTED_NAMESPACE_LAYOUT,
             )
         location = observation.search_locations[0]
-        if _is_filesystem_origin(location):
-            return ResolvedObservation(
-                module=observation.module,
-                origin=location,
-                canonical_origin=canonicalize_path(location),
-                phase=observation.phase,
-                source=observation.source,
+        if is_filesystem_origin(location):
+            frozen_location = next(iter(observation.canonical_search_locations), None)
+            canonical_location = _observation_path(
+                location,
+                frozen_location,
+                capture_cwd=observation.capture_cwd,
+                paths_frozen=observation.paths_frozen,
             )
+            if canonical_location is not None:
+                return ResolvedObservation(
+                    module=observation.module,
+                    origin=location,
+                    canonical_origin=canonical_location,
+                    phase=observation.phase,
+                    source=observation.source,
+                )
 
     metadata = (observation.spec_origin, observation.file)
     issue = (
         ReasonCode.NON_FILESYSTEM_ORIGIN
-        if any(value is not None for value in metadata)
+        if any(value is not None and not is_filesystem_origin(value) for value in metadata)
+        or any(not is_filesystem_origin(value) for value in observation.search_locations)
         else ReasonCode.ORIGIN_UNRESOLVED
     )
     return ResolvedObservation(

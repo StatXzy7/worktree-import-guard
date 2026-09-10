@@ -34,7 +34,9 @@ Issues = "https://github.com/StatXzy7/worktree-import-guard/issues"
 dev = [
   "build>=1.2",
   "mypy>=1.11",
+  "pytest-asyncio>=0.23",
   "pytest-cov>=5",
+  "pytest-xdist>=3.6",
   "ruff>=0.6",
 ]
 
@@ -48,6 +50,8 @@ packages = ["src/worktree_import_guard"]
 include = [
   "/src",
   "/tests",
+  "/benchmarks",
+  "/docs",
   "/examples",
   "/AGENTS.md",
   "/README.md",
@@ -73,6 +77,8 @@ files = ["src"]
 addopts = "--strict-config --strict-markers"
 testpaths = ["tests"]
 markers = [
+  "artifact: builds and installs distributions in a clean virtual environment",
+  "compat: exercises a small supported-plugin compatibility surface",
   "integration: exercises the CLI in subprocesses",
 ]
 

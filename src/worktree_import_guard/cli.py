@@ -7,6 +7,7 @@ import importlib
 import os
 import platform
 import sys
+import time
 from collections.abc import Sequence
 from pathlib import Path
 
@@ -60,6 +61,12 @@ def composite_exit_code(pytest_exit_code: int, guard_status: Status) -> int:
     return {Status.PASS: 0, Status.FAIL: 1, Status.UNKNOWN: 2}[guard_status]
 
 
+def report_write_failure_exit_code(pytest_exit_code: int) -> int:
+    """Surface report failure without overwriting an existing pytest failure."""
+
+    return pytest_exit_code if pytest_exit_code != 0 else 2
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     """Run pytest in this executable's interpreter and evaluate provenance."""
 
@@ -91,6 +98,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if platform.python_implementation() != "CPython":
         observer.mark_unsupported(ReasonCode.UNSUPPORTED_RUNTIME)
 
+    run_started = time.perf_counter()
     os.chdir(pytest_cwd)
     observer.install()
     try:
@@ -101,14 +109,25 @@ def main(argv: Sequence[str] | None = None) -> int:
         observer.snapshot("pytest-returned")
         git = discover_git_context(pytest_cwd, enabled=not options.no_git_context)
         guard = classify(contracts, observer, git)
+        metrics: dict[str, int | float] = {}
+        metrics.update(observer.metrics())
+        metrics["guarded_wall_seconds"] = time.perf_counter() - run_started
+        if plugin.collection_seconds is not None:
+            metrics["pytest_collection_seconds"] = plugin.collection_seconds
         report = RunReport(
             cwd=pytest_cwd,
-            python=Path(sys.executable).resolve(strict=False),
+            python=Path(sys.executable),
             pytest_args=pytest_args,
             pytest_exit_code=pytest_exit_code,
             guard=guard,
             git=git,
             xdist=observer.xdist,
+            python_resolved=Path(sys.executable).resolve(strict=False),
+            sys_prefix=sys.prefix,
+            sys_base_prefix=sys.base_prefix,
+            python_version=platform.python_version(),
+            pytest_version=str(pytest.__version__),
+            metrics=metrics,
         )
     finally:
         observer.stop()
@@ -120,7 +139,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             write_json_report(report_path, report)
         except OSError as error:
             sys.stderr.write(f"wt-import: could not write JSON report {report_path}: {error}\n")
-            return 2
+            return report_write_failure_exit_code(pytest_exit_code)
     return composite_exit_code(pytest_exit_code, guard.status)
 
 

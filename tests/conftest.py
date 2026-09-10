@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import shutil
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -29,11 +28,7 @@ def guard_command() -> list[str]:
     )
     if sibling.is_file():
         return [str(sibling)]
-    executable = shutil.which("wt-import")
-    if executable is not None:
-        return [executable]
-    launcher = "from worktree_import_guard.cli import main; raise SystemExit(main())"
-    return [sys.executable, "-c", launcher]
+    pytest.fail(f"the wt-import console script next to {sys.executable} is required")
 
 
 @pytest.fixture(scope="session")
@@ -41,10 +36,7 @@ def test_runner_command() -> list[str]:
     sibling = Path(sys.executable).with_name("pytest.exe" if sys.platform == "win32" else "pytest")
     if sibling.is_file():
         return [str(sibling)]
-    executable = shutil.which("pytest")
-    if executable is None:
-        pytest.fail("the pytest console script is required for integration tests")
-    return [executable]
+    pytest.fail(f"the pytest console script next to {sys.executable} is required")
 
 
 @pytest.fixture

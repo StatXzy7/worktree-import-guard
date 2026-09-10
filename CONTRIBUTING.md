@@ -12,6 +12,7 @@ ruff check .
 mypy src
 pytest
 pytest --cov=worktree_import_guard --cov-report=term-missing
+WTIG_RUN_ARTIFACT_TESTS=1 pytest tests/artifact
 python -m build
 ```
 
@@ -23,4 +24,3 @@ use real Git worktrees, not only mocks. Keep public reason codes and JSON schema
 and documented.
 
 By contributing, you agree that your contribution is licensed under the MIT License.
-
