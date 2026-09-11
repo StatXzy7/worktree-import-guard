@@ -1,9 +1,41 @@
 # worktree-import-guard
 
-> Your tests passed. They may have tested another checkout.
+> **Changed the code, but the tests pass suspiciously?**
+>
+> `wt-import` tells you which copy of your Python package pytest actually imported.
 
-You changed **feature**, but Python still loaded **main**. Catch that mismatch while pytest runs.
+You changed **feature**, but Python still loaded **main**. This is easy to miss with Git worktrees,
+editable installs, IDEs, and coding agents. `wt-import` checks the source location while pytest runs
+and explains what to inspect when the locations disagree.
 [简体中文](README.zh-CN.md)
+
+## Try it in two minutes
+
+You do not need to understand worktrees first. Run the demo to see the problem in a private,
+offline fixture:
+
+```sh
+wt-import --demo
+```
+
+Then, from the project directory whose tests you normally run, start the guided check:
+
+```sh
+wt-import --doctor
+```
+
+`--doctor` asks you to confirm the project and Python environment, suggests package directories,
+and lets you review the settings before saving. It never imports your package during discovery,
+installs anything, changes `PYTHONPATH`, or repairs the environment. After setup, repeat the check
+whenever you run tests:
+
+```sh
+wt-import -- -q
+```
+
+If the result is **FAIL**, compare the expected and observed paths and inspect the Python environment
+and editable install selected by pytest. If it is **UNKNOWN**, read the reason and next step; it is
+not a pass.
 
 A [real recorded example](docs/demo-output.txt), shortened to key lines; `<demo>` replaces its
 temporary directory. This is an example, not a scan of your computer:
@@ -56,8 +88,8 @@ installation. During an incident, do not sync or repair the target project first
 
 | First, see what it does | Check my project |
 | --- | --- |
-| `wt-import --demo` | `wt-import --setup` |
-| Runs an offline, private example with the installed tool. | Confirms project/environment, package directories, then saving and running tests. |
+| `wt-import --demo` | `wt-import --doctor` |
+| Runs an offline, private example with the installed tool. | Guided setup; `--setup` remains an equivalent spelling. |
 
 Use the executable in the same environment as the Python above:
 

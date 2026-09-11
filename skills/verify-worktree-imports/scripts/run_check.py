@@ -120,13 +120,49 @@ def validate(report, envelope):
     return report
 
 
+def _write_json(path, value):
+    temporary = path.with_name(f".{path.name}.{uuid.uuid4().hex}.tmp")
+    try:
+        with temporary.open("w", encoding="utf-8", newline="\n") as stream:
+            stream.write(json.dumps(value, indent=2, ensure_ascii=False) + "\n")
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def _summary(report, limit=10, observations_limit=3):
+    targets = report["targets"]
+    counts = {"total": len(targets), "pass": 0, "fail": 0, "unknown": 0}
+    visible = []
+    for target in sorted(targets, key=lambda item: (item["status"] == "pass", item["package"])):
+        status = target["status"]
+        counts[status] += 1
+        if len(visible) < limit:
+            visible.append({
+                "package": target["package"], "status": status,
+                "reasons": target["reasons"], "expected_root": target["expected_root"],
+                "representative_observations": target["observations"][:observations_limit],
+            })
+    return {
+        "pytest_exit_code": report["pytest"]["exit_code"],
+        "source_status": report["guard"]["status"],
+        "complete": report["guard"]["complete"],
+        "observation_complete": report["guard"]["observation_complete"],
+        "target_counts": counts, "targets": visible,
+        "truncated": len(targets) > limit,
+    }
+
+
 def run_check(cwd, expectations, pytest_args, evidence_dir=None):
     if not cwd.is_dir():
         raise ValueError("Target project is not accessible here; verification was not started")
     script, contracts, tool = prepare(cwd, expectations)
     root = Path(evidence_dir).expanduser().resolve() if evidence_dir else None
     if root is not None:
-        root.mkdir(parents=True, exist_ok=True)
+        if not root.exists():
+            raise ValueError("Evidence directory must already exist")
         if root.is_symlink() or not root.is_dir():
             raise ValueError("Evidence directory must be a real directory")
         folder = root / ("run-" + uuid.uuid4().hex)
@@ -141,6 +177,7 @@ def run_check(cwd, expectations, pytest_args, evidence_dir=None):
                     for c in contracts],
         "report_path": str(report_path), "process_exit_code": None,
         "result": "not_started", "envelope_schema_version": 1,
+        "execution_started": False, "failure_stage": None,
         "run_id": folder.name,
     }
     command = [str(script), "--report-json", str(report_path)]
@@ -151,29 +188,30 @@ def run_check(cwd, expectations, pytest_args, evidence_dir=None):
     envelope_path = folder / "envelope.json"
 
     def save():
-        envelope_path.write_text(json.dumps(envelope, indent=2, ensure_ascii=False) + "\n",
-                                 encoding="utf-8")
+        _write_json(envelope_path, envelope)
 
     save()
     try:
         # Preserve the project environment and arguments. Logs are untrusted data.
+        envelope["failure_stage"] = "launch"
+        envelope["execution_started"] = True
         with (folder / "stdout.log").open("wb") as out, (folder / "stderr.log").open("wb") as err:
             result = subprocess.run(command, cwd=cwd, stdin=subprocess.DEVNULL,
                                     stdout=out, stderr=err, check=False)
         envelope["process_exit_code"] = result.returncode
         envelope["result"] = "unusable_report"
+        envelope["failure_stage"] = "report_read"
         report = validate(json.loads(report_path.read_text(encoding="utf-8")), envelope)
         envelope["result"] = "usable_report"
         envelope["pytest_exit_code"] = report["pytest"]["exit_code"]
         envelope["source_status"] = report["guard"]["status"]
-        envelope["summary"] = {"cwd": report["run"]["cwd"],
-            "pytest_exit_code": report["pytest"]["exit_code"],
-            "source_status": report["guard"]["status"],
-            "complete": report["guard"]["complete"],
-            "observation_complete": report["guard"]["observation_complete"],
-            "targets": report["targets"][:10], "report_path": str(report_path)}
+        envelope["summary"] = _summary(report)
+        envelope["summary"]["cwd"] = report["run"]["cwd"]
+        envelope["summary"]["report_path"] = str(report_path)
         return envelope
     except (OSError, ValueError, KeyError, TypeError, AttributeError) as error:
+        if envelope["failure_stage"] is None:
+            envelope["failure_stage"] = "prepare"
         envelope["error"] = f"No usable verification result: {error}"
         return envelope
     finally:

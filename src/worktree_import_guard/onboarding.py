@@ -78,7 +78,8 @@ def setup(directory: Path) -> tuple[PackageContract, ...] | None:
             "--setup needs an interactive terminal; use --expect PACKAGE=PATH in CI"
         )
     print(f"Project: {directory}\nPython: {sys.executable}\nEnvironment: {sys.prefix}")
-    print("This checks selected package imports during your tests, in this Python environment.")
+    print("This checks that pytest imports the code you just edited, in this Python environment.")
+    print("It diagnoses the source location; it does not install, activate, or repair anything.")
     venv_python = (
         directory / ".venv" / ("Scripts/python.exe" if sys.platform == "win32" else "bin/python")
     )

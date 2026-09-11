@@ -71,6 +71,11 @@ def _parser() -> argparse.ArgumentParser:
     entry.add_argument(
         "--setup", action="store_true", help="confirm package directories and save settings"
     )
+    entry.add_argument(
+        "--doctor",
+        action="store_true",
+        help="guided first check for this project (alias for --setup)",
+    )
     parser.add_argument("pytest_args", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
     return parser
 
@@ -102,8 +107,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             stream.reconfigure(errors="backslashreplace")
     parser = _parser()
     options = parser.parse_args(argv)
-    if (options.demo or options.setup) and options.expectations:
-        parser.error("--demo/--setup cannot be combined with --expect")
+    if (options.demo or options.setup or options.doctor) and options.expectations:
+        parser.error("--demo/--setup/--doctor cannot be combined with --expect")
     if options.demo:
         if (
             options.pytest_args
@@ -111,6 +116,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             or options.report_json
             or options.show_all
             or options.no_git_context
+            or options.doctor
         ):
             parser.error(
                 "--demo runs its own private example; do not combine it with check options"
@@ -130,7 +136,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "check --cwd, or run from your project directory without --cwd"
         )
     try:
-        if options.setup:
+        if options.setup or options.doctor:
             from .onboarding import setup
 
             selected = setup(pytest_cwd)

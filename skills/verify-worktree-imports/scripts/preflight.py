@@ -32,11 +32,15 @@ def main() -> int:
         print(json.dumps(out, ensure_ascii=False, indent=2))
         return 0
     try:
+        from run_check import console_script
+
+        from worktree_import_guard import __version__
         from worktree_import_guard.onboarding import pytest_available
         from worktree_import_guard.project_config import find_config, load_config
     except ImportError:
         pytest_available = None
         find_config = load_config = None
+        console_script = None
     try:
         out["pytest_version"] = version("pytest")
         out["conditions"]["pytest_compatible"] = bool(pytest_available and pytest_available())
@@ -46,9 +50,16 @@ def main() -> int:
     try:
         dist = distribution("worktree-import-guard")
         out["detector_version"] = dist.version
-        out["conditions"]["detector_compatible"] = dist.version == "0.1.1"
-        from run_check import console_script
-
+        direct = json.loads(dist.read_text("direct_url.json") or "null")
+        preview = "edae3e6fa9a0b065385a080c371c9c17728b4656"
+        compatible = dist.version == __version__ and (dist.version == "0.1.1" or (
+            dist.version == "0.1.0"
+            and isinstance(direct, dict)
+            and direct.get("vcs_info", {}).get("commit_id") == preview
+        ))
+        out["conditions"]["detector_compatible"] = compatible
+        if not compatible:
+            raise ValueError("module/distribution version mismatch or unverified CLI revision")
         out["console_script"] = str(console_script(dist))
         out["conditions"]["console_script_verified"] = True
     except (PackageNotFoundError, ValueError, OSError):
@@ -66,6 +77,7 @@ def main() -> int:
                 ]
         except Exception as exc:
             out["problems"].append(f"invalid_config: {exc}")
+            out["config_invalid"] = True
     required = all(
         out["conditions"].get(k, False)
         for k in (
@@ -75,13 +87,16 @@ def main() -> int:
             "console_script_verified",
         )
     )
-    out["status"] = (
-        "ready"
-        if required and out["targets"]
-        else "needs_selection"
-        if required
-        else "missing_conditions"
-    )
+    if out.get("config_invalid"):
+        out["status"] = "missing_conditions"
+    else:
+        out["status"] = (
+            "ready"
+            if required and out["targets"]
+            else "needs_selection"
+            if required
+            else "missing_conditions"
+        )
     if not required:
         out["problems"].append("one or more required conditions are missing")
     out["next_step"] = "Run guarded pytest after confirming targets."

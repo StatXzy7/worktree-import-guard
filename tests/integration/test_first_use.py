@@ -79,6 +79,20 @@ def test_installed_demo_has_all_three_results(tmp_path, guard_command):
     assert not list(tmp_path.iterdir())
 
 
+def test_doctor_is_guided_setup_alias(tmp_path, guard_command):
+    result = subprocess.run(
+        [*guard_command, "--doctor", "--", "-q"],
+        cwd=tmp_path,
+        input="n\n",
+        capture_output=True,
+        text=True,
+        timeout=10,
+    )
+    assert result.returncode == 2
+    assert "project and Python environment" in result.stdout
+    assert not list(tmp_path.iterdir())
+
+
 def test_broken_config_is_ignored_only_for_explicit_targets(tmp_path, run_guard):
     (tmp_path / ".wt-import.json").write_text("{", encoding="utf-8")
     write_test(tmp_path, "def test_value():\n    pass\n")
