@@ -74,7 +74,9 @@ def _python_command(python: Path, *args: str) -> str:
 
 def setup(directory: Path) -> tuple[PackageContract, ...] | None:
     if not sys.stdin.isatty():
-        print("The guided check confirms this is the project and Python environment used by your tests.")
+        print(
+            "The guided check confirms this is the project and Python environment used by your tests."
+        )
         raise ContractError(
             "--setup needs an interactive terminal; use --expect PACKAGE=PATH in CI"
         )
