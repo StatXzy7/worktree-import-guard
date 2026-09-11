@@ -2,7 +2,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[2]
 INSTALLER = ROOT / "skills/verify-worktree-imports/scripts/install_skill.py"
 
