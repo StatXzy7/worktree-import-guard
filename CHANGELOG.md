@@ -4,10 +4,15 @@ All notable changes to this project are documented here.
 
 ## 0.1.1 — Unreleased candidate
 
-- Add an experimental, independently installable `verify-worktree-imports` Skill.
-- Bind each guarded run to a fresh report and checked runtime/target identity.
-- Distinguish this candidate from same-version 0.1.0 source previews; retain report schema v2.
-- Add preview-upgrade verification and a real-user pilot script (no participant results yet).
+- Add reusable `--doctor` for repeat checks while `--setup` keeps first-time exclusive creation.
+- Align public README quick start with the verified source preview (`--setup`, one environment).
+- Add shared detector compatibility checks for CLI and Skill helpers.
+- Improve Skill `preflight.py` with `problem_details` and status-specific next steps.
+- Reject symlink evidence directories before resolving paths; expand helper regression tests.
+- Document candidate quick start, demo walkthrough, and next-step validation summary.
+- Skill host evidence remains `HOST_UNVERIFIED`; no PyPI publish performed in this increment.
+- Experimental independently installable `verify-worktree-imports` Skill with bound report identity.
+- Preview-upgrade verification and real-user pilot script (no participant results yet).
 
 ## 0.1.0 — Source previews, not a PyPI release
 

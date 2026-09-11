@@ -20,9 +20,9 @@ Ask them to:
    choose to use it again without prompting. Do not require daily use.
 
 Record the first obstacle and any author intervention. After the attempt, ask what
-would stop them retaining the tool. Internal goals: 8/10 independently finish,
-8/10 explain both results correctly, and at least 3 voluntarily reuse it in a second
-relevant scenario. These are product targets, not results or statistical claims.
+would stop them retaining the tool. Internal goals: 5 participants with at least 4 independently finishing first use, at least 2
+voluntarily reusing the tool in a second real check without author coaching. These are trial
+thresholds, not results or statistical claims.
 
 Blank record (one row per consenting participant; use anonymous IDs):
 

@@ -55,13 +55,10 @@ environment. This is useful boundary evidence, not an AGENT_FLOW_VERIFIED result
 
 **Status: STATIC_AND_HELPERS_VERIFIED; HOST_UNVERIFIED.** Real execution and
 PASS/FAIL/UNKNOWN explanation end-to-end have not been established in this host.
-The session attempted to read a newest temporary file during diagnosis; it never
-used that unbound file as a result. The Skill now explicitly prohibits that recovery
-heuristic and requires the exact per-invocation evidence path. The demo session used
-a Python entry-point substitute; the Skill now explicitly requires the installed
-console script for demo too. Both instruction corrections still need host retesting.
-The helper's deterministic tests cannot substitute for that missing host evidence.
-Plugin installation/namespace and other host products remain unverified.
+The 2026-09-11 increment added reusable `--doctor`, structured Skill preflight
+`problem_details`, README/public-entry consistency tests, and evidence-directory
+symlink rejection before path resolution. Retest the seven manual session cases
+after host policy allows reading the exact per-invocation evidence path.
 
 The [sanitized session record](skill-session-evidence.json) preserves user prompts,
 actual command summaries, final replies and transcript hashes. Full local logs are
