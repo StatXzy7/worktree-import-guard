@@ -25,10 +25,10 @@ def direct_url_commit(dist: Distribution) -> str | None:
 
 
 def distribution_compatible(dist: Distribution) -> bool:
-    """Accept the 0.1.1 candidate or the verified 0.1.0 source preview."""
+    """Accept the current release or the verified 0.1.0 source preview."""
 
-    if dist.version == "0.1.1":
-        return dist.version == __version__
+    if dist.version == __version__:
+        return True
     if dist.version == "0.1.0":
         return direct_url_commit(dist) == VERIFIED_PREVIEW_COMMIT
     return False

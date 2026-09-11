@@ -8,26 +8,17 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
-PREVIEW_COMMIT = "edae3e6fa9a0b065385a080c371c9c17728b4656"
-INSTALL_PATTERN = re.compile(
-    r"git\+https://github\.com/StatXzy7/worktree-import-guard\.git@([a-f0-9]{40})"
-)
+PYPI_INSTALL = "worktree-import-guard==0.1.2"
 
 
 @pytest.mark.parametrize("name", ["README.md", "README.zh-CN.md"])
-def test_public_readme_pins_one_verified_preview(name: str) -> None:
-    text = (ROOT / name).read_text(encoding="utf-8")
-    commits = set(INSTALL_PATTERN.findall(text))
-    assert commits == {PREVIEW_COMMIT}
-
-
-@pytest.mark.parametrize("name", ["README.md", "README.zh-CN.md"])
-def test_public_readme_quickstart_uses_setup_not_doctor(name: str) -> None:
+def test_public_readme_quickstart_uses_pypi_release(name: str) -> None:
     text = (ROOT / name).read_text(encoding="utf-8")
     quickstart = text.split("## Install into your existing test environment", 1)[0]
     quickstart = quickstart.split("## 安装到已有测试环境", 1)[0]
+    assert PYPI_INSTALL in quickstart
     assert "--setup" in quickstart
-    assert "--doctor" not in quickstart
+    assert "--doctor" in quickstart
 
 
 @pytest.mark.parametrize("name", ["README.md", "README.zh-CN.md"])
@@ -44,7 +35,10 @@ def test_public_readme_avoids_bare_wt_import_in_quickstart(name: str) -> None:
 
 
 @pytest.mark.parametrize("name", ["README.md", "README.zh-CN.md"])
-def test_public_readme_documents_candidate_doctor_separately(name: str) -> None:
+def test_public_readme_documents_pypi_not_source_preview(name: str) -> None:
     text = (ROOT / name).read_text(encoding="utf-8")
-    assert "0.1.1" in text and "--doctor" in text
-    assert "candidate-quickstart" in text
+    assert PYPI_INSTALL in text
+    assert "PyPI" in text or "pypi" in text.lower()
+    assert "git+https://github.com/StatXzy7/worktree-import-guard.git@" not in text.split(
+        "## Explicit checks", 1
+    )[0]

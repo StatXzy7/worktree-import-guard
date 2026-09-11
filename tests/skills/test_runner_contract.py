@@ -93,7 +93,7 @@ def test_fresh_report_missing_or_damaged_never_uses_old_pass(tmp_path, monkeypat
     package.mkdir()
     from worktree_import_guard.contracts import parse_contracts
     monkeypatch.setattr(runner, "prepare", lambda *_: (
-        Path("wt-import"), parse_contracts(["pkg=pkg"], tmp_path), {"version": "0.1.1"}
+        Path("wt-import"), parse_contracts(["pkg=pkg"], tmp_path), {"version": "0.1.2"}
     ))
     calls = []
 

@@ -30,7 +30,8 @@ class FakeDist:
 @pytest.mark.parametrize(
     ("version", "commit", "expected"),
     [
-        ("0.1.1", None, True),
+        ("0.1.2", None, True),
+        ("0.1.1", None, False),
         ("0.1.0", VERIFIED_PREVIEW_COMMIT, True),
         ("0.1.0", "deadbeef" * 5, False),
         ("0.1.0", None, False),

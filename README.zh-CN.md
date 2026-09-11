@@ -31,13 +31,13 @@ WORKTREE IMPORT GUARD: PASS
 
 ## 两分钟上手
 
-安装到**已有 pytest 环境**中。公开入口是下方固定的**已验证源码预览**；本节所有命令都使用同一环境中的
-console script，不要依赖激活环境或 PATH 中的其他安装。
+安装到**已有 pytest 环境**中。本节所有命令都使用同一环境中的 console script，不要依赖激活环境或
+PATH 中的其他安装。
 
 Windows PowerShell（无须激活环境或修改执行策略）：
 
 ```powershell
-& ".venv\Scripts\python.exe" -m pip install "git+https://github.com/StatXzy7/worktree-import-guard.git@edae3e6fa9a0b065385a080c371c9c17728b4656"
+& ".venv\Scripts\python.exe" -m pip install "worktree-import-guard==0.1.2"
 & ".venv\Scripts\wt-import.exe" --demo
 & ".venv\Scripts\wt-import.exe" --setup
 ```
@@ -45,60 +45,55 @@ Windows PowerShell（无须激活环境或修改执行策略）：
 Linux / macOS：
 
 ```sh
-".venv/bin/python" -m pip install "git+https://github.com/StatXzy7/worktree-import-guard.git@edae3e6fa9a0b065385a080c371c9c17728b4656"
+".venv/bin/python" -m pip install "worktree-import-guard==0.1.2"
 ".venv/bin/wt-import" --demo
 ".venv/bin/wt-import" --setup
 ```
 
-`.venv` 只是**现有环境**的示例，请替换为实际路径。`--demo` 运行离线临时示例；`--setup` 确认项目与环境、
-选择包目录、确认保存并运行测试。设置完成后每次只需：
+`.venv` 只是**现有环境**的示例，请替换为实际路径。设置完成后每次只需：
 
 ```powershell
+& ".venv\Scripts\wt-import.exe" --doctor
 & ".venv\Scripts\wt-import.exe" -- -q
 ```
 
 ```sh
+".venv/bin/wt-import" --doctor
 ".venv/bin/wt-import" -- -q
 ```
 
+`--doctor` 复用已保存的 `.wt-import.json` 并确认一次；`--setup` 仍拒绝覆盖已有文件。
+
 ## 安装到已有测试环境
 
-**目前是公开源码预览，不是正式 PyPI 发行版。** 需要 Python、pip、Git，以及下载源码、构建依赖和 pytest
-的网络连接。以下固定提交已验证，项目仍处于 alpha 阶段。若已完成“两分钟上手”，可跳过重复安装。
+**PyPI 发行版 0.1.2**（alpha）。需要 Python、pip 和网络连接。若已完成“两分钟上手”，可跳过重复安装。
+索引上的 0.1.1 早于可复用的 `--doctor`；如有需要请用
+`pip install --upgrade worktree-import-guard==0.1.2` 升级。
 
 Windows PowerShell：
 
 ```powershell
-& ".venv\Scripts\python.exe" -m pip install "git+https://github.com/StatXzy7/worktree-import-guard.git@edae3e6fa9a0b065385a080c371c9c17728b4656"
+& ".venv\Scripts\python.exe" -m pip install "worktree-import-guard==0.1.2"
 ```
 
 Linux / macOS：
 
 ```sh
-".venv/bin/python" -m pip install "git+https://github.com/StatXzy7/worktree-import-guard.git@edae3e6fa9a0b065385a080c371c9c17728b4656"
+".venv/bin/python" -m pip install "worktree-import-guard==0.1.2"
 ```
 
-安装会满足工具的 pytest 依赖要求，保留已符合版本范围的依赖。**从旧的 0.1.0 预览升级时**，
-完成上述安装后，再按[只更新工具的命令](docs/troubleshooting.md#refresh-an-older-source-preview)替换
-同版本旧代码，不重装 pytest。排查现场时不要先 sync 或修复待测项目。
+安装会满足工具的 pytest 依赖要求，保留已符合版本范围的依赖。**从旧的 0.1.0 源码预览升级时**，
+先按[只更新工具的命令](docs/troubleshooting.md#refresh-an-older-source-preview)，再安装
+`worktree-import-guard==0.1.2`。排查现场时不要先 sync 或修复待测项目。
 
 ## 选择一个入口
 
 | 先体验 | 检查我的项目 |
 | --- | --- |
-| `& ".venv\Scripts\wt-import.exe" --demo` | `& ".venv\Scripts\wt-import.exe" --setup` |
-| 用已安装工具运行离线临时示例。 | 首次设置；保存 `.wt-import.json`。 |
+| `& ".venv\Scripts\wt-import.exe" --demo` | 首次 `--setup`，之后 `--doctor` |
+| 用已安装工具运行离线临时示例。 | 首次保存配置；之后复用配置检查。 |
 
 POSIX 将路径改为 `".venv/bin/wt-import"`。
-
-## 0.1.1 候选版（尚未发布到 PyPI）
-
-仓库当前候选版增加了可复用的 `--doctor`、更明确的 Skill 准备状态，以及报告身份校验。
-在真实 PyPI 下载并验证之前，它**不是**公开 README 的安装目标。维护者与早期测试者可在阅读
-[候选版快速开始](docs/candidate-quickstart.md) 后安装已验证 wheel 或精确候选提交。
-
-已有配置时，候选版的 `--doctor` 复用 `.wt-import.json`，确认一次后运行 guarded pytest。
-`--setup` 仍拒绝覆盖已有文件。
 
 ## 分别看测试结果和来源结果
 
@@ -142,6 +137,3 @@ CI 缺少配置和显式目标时立即退出 2，不等待输入；设置向导
 [运行范围](docs/runtime-scope.md) · [JSON schema v2](docs/json-schema-v2.md) ·
 [贡献](CONTRIBUTING.md) · [安全](SECURITY.md) · [变更记录](CHANGELOG.md) ·
 [基准](benchmarks/README.md) · [正式发布步骤](docs/releasing/README.md)
-
-固定源码提交早于本次首页重写，因此该安装包内的 README 仍含旧安装说明。当前入口请以本仓库首页为准，或访问
-[该预览提交的文档](https://github.com/StatXzy7/worktree-import-guard/tree/edae3e6fa9a0b065385a080c371c9c17728b4656/docs)。

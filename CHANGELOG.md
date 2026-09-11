@@ -2,7 +2,13 @@
 
 All notable changes to this project are documented here.
 
-## 0.1.1 — Unreleased candidate
+## 0.1.2 — 2026-09-11
+
+- Publish reusable `--doctor`, README/PyPI alignment, Skill preflight improvements, and
+  compatibility checks that were missing from the initial 0.1.1 index upload.
+- Public README now installs from PyPI and documents `--doctor` for repeat checks.
+
+## 0.1.1 — 2026-09-11
 
 - Add reusable `--doctor` for repeat checks while `--setup` keeps first-time exclusive creation.
 - Align public README quick start with the verified source preview (`--setup`, one environment).
@@ -10,7 +16,8 @@ All notable changes to this project are documented here.
 - Improve Skill `preflight.py` with `problem_details` and status-specific next steps.
 - Reject symlink evidence directories before resolving paths; expand helper regression tests.
 - Document candidate quick start, demo walkthrough, and next-step validation summary.
-- Skill host evidence remains `HOST_UNVERIFIED`; no PyPI publish performed in this increment.
+- Skill host evidence remains `HOST_UNVERIFIED`; no fabricated Codex session pass.
+- Published to PyPI and tagged `v0.1.1` on GitHub; public README switched after smoke test.
 - Experimental independently installable `verify-worktree-imports` Skill with bound report identity.
 - Preview-upgrade verification and real-user pilot script (no participant results yet).
 

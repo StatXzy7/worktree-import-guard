@@ -2,8 +2,9 @@
 
 Maintainer documentation; normal users only need README. Source PR/merge authorization
 does not authorize tags, GitHub Releases, package uploads or remote configuration.
-Version 0.1.1 distinguishes this candidate from old 0.1.0 source previews. The public
-README remains pinned to the verified preview until a real release is available.
+Version 0.1.1 is published on PyPI. The public README uses
+`pip install worktree-import-guard==0.1.1`. Legacy source-preview refresh remains in
+[troubleshooting](../troubleshooting.md#refresh-an-older-source-preview).
 
 ## Remaining external actions (one release operation)
 

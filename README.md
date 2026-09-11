@@ -11,14 +11,13 @@ and explains what to inspect when the locations disagree.
 
 ## Try it in two minutes
 
-Install into the same Python environment where your project's pytest already works. The current
-public entry is a **verified source preview** pinned below; use the matching executable for every
-command in this section.
+Install into the same Python environment where your project's pytest already works. Use the matching
+executable for every command in this section.
 
 Linux / macOS:
 
 ```sh
-".venv/bin/python" -m pip install "git+https://github.com/StatXzy7/worktree-import-guard.git@edae3e6fa9a0b065385a080c371c9c17728b4656"
+".venv/bin/python" -m pip install "worktree-import-guard==0.1.2"
 ".venv/bin/wt-import" --demo
 ".venv/bin/wt-import" --setup
 ```
@@ -26,7 +25,7 @@ Linux / macOS:
 Windows PowerShell (no activation or execution-policy changes):
 
 ```powershell
-& ".venv\Scripts\python.exe" -m pip install "git+https://github.com/StatXzy7/worktree-import-guard.git@edae3e6fa9a0b065385a080c371c9c17728b4656"
+& ".venv\Scripts\python.exe" -m pip install "worktree-import-guard==0.1.2"
 & ".venv\Scripts\wt-import.exe" --demo
 & ".venv\Scripts\wt-import.exe" --setup
 ```
@@ -34,16 +33,22 @@ Windows PowerShell (no activation or execution-policy changes):
 Replace `.venv` with the path to your **existing** test environment. `--demo` runs a private,
 offline example. `--setup` confirms the project and Python environment, suggests package directories,
 and lets you review settings before saving. It never imports your package during discovery,
-installs anything, changes `PYTHONPATH`, or repairs the environment. After setup, repeat the check
-whenever you run tests:
+installs anything, changes `PYTHONPATH`, or repairs the environment.
+
+After setup, repeat the check whenever you run tests:
 
 ```sh
+".venv/bin/wt-import" --doctor
 ".venv/bin/wt-import" -- -q
 ```
 
 ```powershell
+& ".venv\Scripts\wt-import.exe" --doctor
 & ".venv\Scripts\wt-import.exe" -- -q
 ```
+
+`--doctor` reuses saved `.wt-import.json` with one confirmation. `--setup` still refuses to overwrite
+an existing file.
 
 If the result is **FAIL**, compare the expected and observed paths and inspect the Python environment
 and editable install selected by pytest. If it is **UNKNOWN**, read the reason and next step; it is
@@ -70,46 +75,35 @@ WORKTREE IMPORT GUARD: PASS
 
 ## Install into your existing test environment
 
-**Public source preview, not a PyPI release.** You need Python with pip, Git, and network access to
-download source, build dependencies and pytest. The commit below is fixed and verified; the project
-is still alpha. If you already completed Quick Start, this step is done.
+**PyPI release 0.1.2** (alpha). You need Python with pip and network access. If you already completed
+Quick Start, this step is done. Index version 0.1.1 predates reusable `--doctor`; upgrade with
+`pip install --upgrade worktree-import-guard==0.1.2` if needed.
 
 Linux / macOS:
 
 ```sh
-".venv/bin/python" -m pip install "git+https://github.com/StatXzy7/worktree-import-guard.git@edae3e6fa9a0b065385a080c371c9c17728b4656"
+".venv/bin/python" -m pip install "worktree-import-guard==0.1.2"
 ```
 
 Windows PowerShell:
 
 ```powershell
-& ".venv\Scripts\python.exe" -m pip install "git+https://github.com/StatXzy7/worktree-import-guard.git@edae3e6fa9a0b065385a080c371c9c17728b4656"
+& ".venv\Scripts\python.exe" -m pip install "worktree-import-guard==0.1.2"
 ```
 
 Installation satisfies the tool's pytest requirement; already supported dependencies are retained.
-**Upgrading an earlier 0.1.0 preview?** After this install, follow the
-[guard-only refresh command](docs/troubleshooting.md#refresh-an-older-source-preview) to replace the
-same-version tool without reinstalling pytest. During an incident, do not sync or repair the target
-project first.
+**Upgrading an older 0.1.0 source preview?** Follow the
+[guard-only refresh command](docs/troubleshooting.md#refresh-an-older-source-preview), then install
+`worktree-import-guard==0.1.2`. During an incident, do not sync or repair the target project first.
 
 ## Choose an entry
 
 | First, see what it does | Check my project |
 | --- | --- |
-| `".venv/bin/wt-import" --demo` | `".venv/bin/wt-import" --setup` |
-| Runs an offline, private example with the installed tool. | Guided first-time setup; saves `.wt-import.json`. |
+| `".venv/bin/wt-import" --demo` | `".venv/bin/wt-import" --setup` then `".venv/bin/wt-import" --doctor` |
+| Runs an offline, private example with the installed tool. | First-time setup saves settings; `--doctor` reuses them. |
 
 On Windows, use `& ".venv\Scripts\wt-import.exe"` instead of the POSIX paths above.
-
-## 0.1.1 candidate (not on PyPI yet)
-
-The repository's current development candidate adds reusable `--doctor`, improved Skill preflight
-states, and report identity checks. It is **not** the public README install target until a real PyPI
-release is downloaded and verified. Maintainers and early testers can install a verified wheel or the
-exact candidate commit after reading [candidate quick start](docs/candidate-quickstart.md).
-
-With saved settings, the candidate's `--doctor` reuses `.wt-import.json` and asks once before
-running guarded pytest. `--setup` still refuses to overwrite an existing file.
 
 ## Let a coding agent check
 
@@ -163,7 +157,3 @@ Without config or explicit targets, CI exits 2 immediately; setup needs an inter
 [Runtime scope](docs/runtime-scope.md) · [JSON schema v2](docs/json-schema-v2.md) ·
 [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) · [Changelog](CHANGELOG.md) ·
 [Benchmarks](benchmarks/README.md) · [Publication step](docs/releasing/README.md)
-
-The pinned source revision predates this homepage rewrite, so its packaged README still contains
-the older installation text. Use this repository homepage for the current entry points, or the
-[documentation at the preview revision](https://github.com/StatXzy7/worktree-import-guard/tree/edae3e6fa9a0b065385a080c371c9c17728b4656/docs).

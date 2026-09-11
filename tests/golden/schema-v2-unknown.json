@@ -16,5 +16,5 @@
   "schema_version": 2,
   "scope": {"child_process_imports": false, "process": "current-pytest-process", "xdist": false},
   "targets": [{"expected_root": "expected", "observations": [], "package": "pkg", "reasons": ["TARGET_NOT_OBSERVED"], "status": "unknown"}],
-  "tool": {"name": "worktree-import-guard", "version": "0.1.1"}
+  "tool": {"name": "worktree-import-guard", "version": "0.1.2"}
 }
