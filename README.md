@@ -11,8 +11,23 @@ and explains what to inspect when the locations disagree.
 
 ## Try it in two minutes
 
-You do not need to understand worktrees first. Run the demo to see the problem in a private,
-offline fixture:
+Install into the same Python environment where your project's pytest already works. The current
+release is a source preview; use the pinned revision below:
+
+Linux / macOS:
+
+```sh
+".venv/bin/python" -m pip install "git+https://github.com/StatXzy7/worktree-import-guard.git@edae3e6fa9a0b065385a080c371c9c17728b4656"
+```
+
+Windows PowerShell:
+
+```powershell
+& ".venv\Scripts\python.exe" -m pip install "git+https://github.com/StatXzy7/worktree-import-guard.git@edae3e6fa9a0b065385a080c371c9c17728b4656"
+```
+
+Use the matching executable below. You do not need to understand worktrees first. Run the demo to
+see the problem in a private, offline fixture:
 
 ```sh
 wt-import --demo
@@ -63,8 +78,9 @@ You need Python with pip, Git, and network access to download source, build depe
 The commit below is fixed and verified; the project is still alpha.
 
 Use the environment where your project's pytest already works. `.venv` below is an example of
-that **existing environment**; replace it with your real path. If you do not have a Python test
-project yet, the recorded example explains the tool without installing anything.
+that **existing environment**; replace it with your real path. If you followed Quick Start, this
+step is already complete. If you do not have a Python test project yet, the recorded example
+explains the tool without installing anything.
 
 Linux / macOS:
 
@@ -95,14 +111,14 @@ Use the executable in the same environment as the Python above:
 
 ```sh
 ".venv/bin/wt-import" --demo
-".venv/bin/wt-import" --setup
+".venv/bin/wt-import" --doctor
 # After setup, repeat checks without re-entering directories:
 ".venv/bin/wt-import" -- -q
 ```
 
 ```powershell
 & ".venv\Scripts\wt-import.exe" --demo
-& ".venv\Scripts\wt-import.exe" --setup
+& ".venv\Scripts\wt-import.exe" --doctor
 # After setup:
 & ".venv\Scripts\wt-import.exe" -- -q
 ```
