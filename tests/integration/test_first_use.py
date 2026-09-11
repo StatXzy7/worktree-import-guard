@@ -79,18 +79,53 @@ def test_installed_demo_has_all_three_results(tmp_path, guard_command):
     assert not list(tmp_path.iterdir())
 
 
-def test_doctor_is_guided_setup_alias(tmp_path, guard_command):
+def test_doctor_without_config_prompts_like_setup(tmp_path):
     result = subprocess.run(
-        [*guard_command, "--doctor", "--", "-q"],
+        [
+            sys.executable,
+            "-c",
+            "import sys; sys.stdin.isatty = lambda: True; "
+            "from worktree_import_guard.cli import main; "
+            "raise SystemExit(main(['--doctor','--','-q']))",
+        ],
         cwd=tmp_path,
         input="n\n",
         capture_output=True,
         text=True,
+        encoding="utf-8",
         timeout=10,
     )
     assert result.returncode == 2
-    assert "project and Python environment" in result.stdout
+    assert "1/3" in result.stdout
     assert not list(tmp_path.iterdir())
+
+
+def test_doctor_with_config_reuses_settings(tmp_path):
+    package = tmp_path / "pkg"
+    package.mkdir()
+    (package / "__init__.py").write_text("VALUE=42\n", encoding="utf-8")
+    (tmp_path / ".wt-import.json").write_text(
+        '{"schema_version": 1, "expect": {"pkg": "pkg"}}',
+        encoding="utf-8",
+    )
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "import sys; sys.stdin.isatty = lambda: True; "
+            "from worktree_import_guard.cli import main; "
+            "raise SystemExit(main(['--doctor','--','-q']))",
+        ],
+        cwd=tmp_path,
+        input="n\n",
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        timeout=10,
+    )
+    assert result.returncode == 2
+    assert "reuses saved settings" in result.stdout
+    assert "1/3" not in result.stdout
 
 
 def test_broken_config_is_ignored_only_for_explicit_targets(tmp_path, run_guard):

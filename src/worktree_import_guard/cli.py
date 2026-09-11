@@ -74,7 +74,7 @@ def _parser() -> argparse.ArgumentParser:
     entry.add_argument(
         "--doctor",
         action="store_true",
-        help="guided first check for this project (alias for --setup)",
+        help="reuse saved settings for a repeat check, or run first-time setup",
     )
     parser.add_argument("pytest_args", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
     return parser
@@ -136,7 +136,14 @@ def main(argv: Sequence[str] | None = None) -> int:
             "check --cwd, or run from your project directory without --cwd"
         )
     try:
-        if options.setup or options.doctor:
+        if options.doctor:
+            from .onboarding import doctor
+
+            selected = doctor(pytest_cwd)
+            if selected is None:
+                return 2
+            contracts = selected
+        elif options.setup:
             from .onboarding import setup
 
             selected = setup(pytest_cwd)
@@ -148,7 +155,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         elif (config := find_config(pytest_cwd)) is not None:
             contracts = load_config(config)
         else:
-            parser.error("no package settings; run --setup, or use --expect PACKAGE=PATH -- -q")
+            parser.error(
+                "no package settings; run --setup or --doctor, "
+                "or use --expect PACKAGE=PATH -- -q"
+            )
     except ContractError as error:
         parser.error(
             f"{error}; use an import name and source directory, e.g. demo_pkg=src/demo_pkg"

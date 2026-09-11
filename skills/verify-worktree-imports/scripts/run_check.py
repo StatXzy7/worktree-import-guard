@@ -42,32 +42,28 @@ def console_script(dist):
 
 def prepare(cwd, expectations):
     # Reuse the installed engine's contracts; do not import candidate project packages.
-    from worktree_import_guard import __version__
+    from worktree_import_guard.compatibility import distribution_compatible
     from worktree_import_guard.contracts import parse_contracts
     from worktree_import_guard.onboarding import pytest_available
     from worktree_import_guard.project_config import find_config, load_config
 
     dist = distribution("worktree-import-guard")
-    direct = json.loads(dist.read_text("direct_url.json") or "null")
-    # Old previews all used 0.1.0. Only the verified preview revision is accepted.
-    preview = "edae3e6fa9a0b065385a080c371c9c17728b4656"
-    verified_preview = (
-        isinstance(direct, dict) and direct.get("vcs_info", {}).get("commit_id") == preview
-    )
-    if dist.version != __version__ or not (
-        dist.version == "0.1.1" or (dist.version == "0.1.0" and verified_preview)
-    ):
+    if not distribution_compatible(dist):
         raise ValueError("Unverified CLI revision; use the documented compatible candidate/preview")
     if not pytest_available():
         raise ValueError("This environment needs supported pytest >=8.2,<10")
     script = console_script(dist)
+    try:
+        direct_url = dist.read_text("direct_url.json")
+    except OSError:
+        direct_url = None
     if expectations:
         contracts = parse_contracts(expectations, cwd)
     elif (config := find_config(cwd)) is not None:
         contracts = load_config(config)
     else:
         raise ValueError("No confirmed targets: reuse static candidates, then ask for a mapping")
-    return script, contracts, {"version": dist.version, "direct_url": direct}
+    return script, contracts, {"version": dist.version, "direct_url": direct_url}
 
 
 def validate(report, envelope):
@@ -159,11 +155,14 @@ def run_check(cwd, expectations, pytest_args, evidence_dir=None):
     if not cwd.is_dir():
         raise ValueError("Target project is not accessible here; verification was not started")
     script, contracts, tool = prepare(cwd, expectations)
-    root = Path(evidence_dir).expanduser().resolve() if evidence_dir else None
-    if root is not None:
+    if evidence_dir is not None:
+        root = Path(evidence_dir).expanduser()
+        if root.is_symlink():
+            raise ValueError("Evidence directory must be a real directory, not a symlink")
+        root = root.resolve()
         if not root.exists():
             raise ValueError("Evidence directory must already exist")
-        if root.is_symlink() or not root.is_dir():
+        if not root.is_dir():
             raise ValueError("Evidence directory must be a real directory")
         folder = root / ("run-" + uuid.uuid4().hex)
         folder.mkdir()

@@ -10,7 +10,7 @@ from pathlib import Path
 
 from .contracts import ContractError, parse_contracts
 from .models import PackageContract
-from .project_config import CONFIG_NAME, config_data, save_config
+from .project_config import CONFIG_NAME, config_data, find_config, load_config, save_config
 
 _EXCLUDED = {
     "tests",
@@ -72,15 +72,7 @@ def _python_command(python: Path, *args: str) -> str:
     return shlex.join(words)
 
 
-def setup(directory: Path) -> tuple[PackageContract, ...] | None:
-    if not sys.stdin.isatty():
-        print(
-            "The guided check confirms this is the project and Python environment "
-            "used by your tests."
-        )
-        raise ContractError(
-            "--setup needs an interactive terminal; use --expect PACKAGE=PATH in CI"
-        )
+def _environment_banner(directory: Path) -> None:
     print(f"Project: {directory}\nPython: {sys.executable}\nEnvironment: {sys.prefix}")
     print("This checks that pytest imports the code you just edited, in this Python environment.")
     print("It diagnoses the source location; it does not install, activate, or repair anything.")
@@ -96,13 +88,63 @@ def setup(directory: Path) -> tuple[PackageContract, ...] | None:
         print(_python_command(venv_python, "-m", "pip", "show", "worktree-import-guard"))
         print(
             "If missing, follow the README installation command using that Python. "
-            "Then restart setup there:"
+            "Then restart there:"
         )
         print(_python_command(venv_python, "-m", "worktree_import_guard.cli", "--setup"))
+
+
+def _require_pytest() -> None:
     if not pytest_available():
         raise ContractError(
             "this environment needs pytest >=8.2,<10; use your existing test environment"
         )
+
+
+def doctor(directory: Path) -> tuple[PackageContract, ...] | None:
+    """Reuse saved settings for repeat checks, or run first-time setup when none exist."""
+
+    if not sys.stdin.isatty():
+        print(
+            "The guided check confirms this is the project and Python environment "
+            "used by your tests."
+        )
+        raise ContractError(
+            "--doctor needs an interactive terminal; use wt-import -- -q, "
+            "or --expect PACKAGE=PATH in CI"
+        )
+    config_path = find_config(directory)
+    if config_path is None:
+        return setup(directory)
+    try:
+        contracts = load_config(config_path)
+    except ContractError as error:
+        print(f"Configuration file: {config_path}")
+        raise ContractError(f"saved settings cannot be used: {error}") from error
+    _environment_banner(directory)
+    _require_pytest()
+    print(f"Configuration: {config_path}")
+    for contract in contracts:
+        print(f"  {contract.package} = {contract.declared_path}")
+    print("This reuses saved settings; it does not overwrite your configuration.")
+    print("Then run pytest in this project. Your tests may have side effects.")
+    if input("Run the check now with these settings? [y/N] ").lower() not in {"y", "yes"}:
+        print("Check cancelled; tests were not started.")
+        return None
+    print("Next time: wt-import -- -q")
+    return contracts
+
+
+def setup(directory: Path) -> tuple[PackageContract, ...] | None:
+    if not sys.stdin.isatty():
+        print(
+            "The guided check confirms this is the project and Python environment "
+            "used by your tests."
+        )
+        raise ContractError(
+            "--setup needs an interactive terminal; use --expect PACKAGE=PATH in CI"
+        )
+    _environment_banner(directory)
+    _require_pytest()
     if (directory / CONFIG_NAME).exists() or (directory / CONFIG_NAME).is_symlink():
         raise ContractError(
             f"{CONFIG_NAME} already exists; inspect it before changing your contract"
