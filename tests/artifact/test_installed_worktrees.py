@@ -177,7 +177,7 @@ def test_wheel_console_scripts_pth_and_pep660_across_worktrees(
         [str(python), "-m", "pytest", "tests/integration/test_first_use.py", "-q"],
         cwd=regression_root, env=env,
     )
-    assert "13 passed" in first_use.stdout, first_use.stdout
+    assert "14 passed" in first_use.stdout, first_use.stdout
 
     site_packages_text = run(
         [str(python), "-c", "import sysconfig; print(sysconfig.get_path('purelib'))"],
