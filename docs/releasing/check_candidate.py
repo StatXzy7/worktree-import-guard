@@ -59,6 +59,16 @@ def script(venv: Path, name: str) -> str:
     )
 
 
+def project_version() -> str:
+    match = re.search(
+        r'^version = "([^"]+)"',
+        (ROOT / "pyproject.toml").read_text(encoding="utf-8"),
+        re.MULTILINE,
+    )
+    assert match is not None
+    return match.group(1)
+
+
 def check_workflows() -> None:
     template = ROOT / "docs/releasing/release.yml.example"
     active_release = ROOT / ".github/workflows/release.yml"
@@ -79,11 +89,12 @@ def check_workflows() -> None:
             assert jobs["publish"]["needs"] == ["build", "test-files"]
             assert jobs["publish"]["permissions"] == {"id-token": "write"}
             assert jobs["publish"]["environment"]["name"] == "pypi"
+            version = project_version()
             for name in ("build", "publish"):
                 for restriction in (
                     "refs/heads/main",
                     "workflow_dispatch",
-                    "0.1.2",
+                    version,
                     "StatXzy7/worktree-import-guard",
                 ):
                     assert restriction in jobs[name]["if"]
