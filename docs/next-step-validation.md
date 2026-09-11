@@ -7,7 +7,7 @@ in CI artifacts or a disposable output directory, not in the repository.
 
 | Item | Value |
 | --- | --- |
-| HEAD | `fdb86af60ec54cd3022208243f04d7aed7473d18` (reference commit; incremental changes applied locally) |
+| HEAD | `b7e8acb` on `main` (4 commits: A/B/C + artifact count fix) |
 | Package version | `0.1.1` candidate |
 | Local Python | CPython 3.13.9 |
 | Local pytest | 8.4.2 |
@@ -31,6 +31,9 @@ in CI artifacts or a disposable output directory, not in the repository.
 - **A:** Public README/quickstart consistency, README command tests, release doc alignment.
 - **B:** Reusable `--doctor`, actionable `preflight.py` with `problem_details`, regression tests.
 - **C:** Evidence-dir symlink ordering fix, validation doc refresh, no false host pass claim.
+
+Artifact checks with `WTIG_RUN_ARTIFACT_TESTS=1` on Windows (CPython 3.13.9): **12 passed**
+(including public `edae3e6` install/demo/setup/repeat and 0.1.0→0.1.1 upgrade smoke).
 
 ## External actions still required
 
