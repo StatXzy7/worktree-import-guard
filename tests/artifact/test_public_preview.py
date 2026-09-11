@@ -42,7 +42,13 @@ def test_public_readme_pypi_install_demo_setup_and_repeat(tmp_path, project_root
         venv / ("Scripts/wt-import.exe" if sys.platform == "win32" else "bin/wt-import"),
     )
     shell_run([str(python), "-m", "pip", "install", "pytest==8.2.0"], project)
-    shell_run([str(python), "-m", "pip", "install", PYPI_SPEC], project)
+    wheel_value = os.environ.get("WTIG_ARTIFACT_WHEEL")
+    if wheel_value:
+        from pathlib import Path
+
+        shell_run([str(python), "-m", "pip", "install", str(Path(wheel_value).resolve())], project)
+    else:
+        shell_run([str(python), "-m", "pip", "install", PYPI_SPEC], project)
     assert "pytest 8.2.0" in shell_run([str(python), "-m", "pytest", "--version"], project).stdout
     assert shell_run([str(guard), "--version"], project).stdout.strip() == "wt-import 0.1.2"
     shell_run([str(guard), "--help"], project)
