@@ -125,7 +125,8 @@ def test_legacy_preview_refresh_then_pypi_upgrade(tmp_path, project_root, monkey
     shell_run([str(python), "-m", "pip", "install", "pytest==8.2.0"], project)
     shell_run([str(python), "-m", "pip", "install", url], project)
     shell_run([str(python), "-m", "pip", "install", "--force-reinstall", "--no-deps", url], project)
-    shell_run([str(python), "-m", "pip", "install", "--upgrade", PYPI_SPEC], project)
+    upgrade_target = os.environ.get("WTIG_ARTIFACT_WHEEL") or PYPI_SPEC
+    shell_run([str(python), "-m", "pip", "install", "--upgrade", upgrade_target], project)
     assert shell_run([str(guard), "--version"], project).stdout.strip() == "wt-import 0.1.2"
     assert "Demo complete" in shell_run([str(guard), "--demo"], project).stdout
     print(f"Legacy preview {preview} -> {PYPI_SPEC} upgrade passed")
