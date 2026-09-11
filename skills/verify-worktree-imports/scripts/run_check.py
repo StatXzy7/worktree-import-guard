@@ -10,6 +10,7 @@ import subprocess
 import sys
 import sysconfig
 import tempfile
+import uuid
 from importlib.metadata import distribution
 from pathlib import Path
 
@@ -119,11 +120,19 @@ def validate(report, envelope):
     return report
 
 
-def run_check(cwd, expectations, pytest_args):
+def run_check(cwd, expectations, pytest_args, evidence_dir=None):
     if not cwd.is_dir():
         raise ValueError("Target project is not accessible here; verification was not started")
     script, contracts, tool = prepare(cwd, expectations)
-    folder = Path(tempfile.mkdtemp(prefix="wt-import-check-"))
+    root = Path(evidence_dir).expanduser() if evidence_dir else None
+    if root is not None:
+        root.mkdir(parents=True, exist_ok=True)
+        if root.is_symlink() or not root.is_dir():
+            raise ValueError("Evidence directory must be a real directory")
+        folder = root / ("run-" + uuid.uuid4().hex)
+        folder.mkdir()
+    else:
+        folder = Path(tempfile.mkdtemp(prefix="wt-import-check-"))
     report_path = folder / "report.json"  # New private directory, never a previous PASS.
     envelope = {
         "runtime": identity(), "console_script": str(script), "cwd": str(cwd),
@@ -131,7 +140,8 @@ def run_check(cwd, expectations, pytest_args):
         "targets": [{"package": c.package, "expected_root": str(c.expected_root)}
                     for c in contracts],
         "report_path": str(report_path), "process_exit_code": None,
-        "result": "not_started",
+        "result": "not_started", "envelope_schema_version": 1,
+        "run_id": folder.name,
     }
     command = [str(script), "--report-json", str(report_path)]
     for value in expectations:
@@ -156,6 +166,12 @@ def run_check(cwd, expectations, pytest_args):
         envelope["result"] = "usable_report"
         envelope["pytest_exit_code"] = report["pytest"]["exit_code"]
         envelope["source_status"] = report["guard"]["status"]
+        envelope["summary"] = {"cwd": report["run"]["cwd"],
+            "pytest_exit_code": report["pytest"]["exit_code"],
+            "source_status": report["guard"]["status"],
+            "complete": report["guard"]["complete"],
+            "observation_complete": report["guard"]["observation_complete"],
+            "targets": report["targets"][:10], "report_path": str(report_path)}
         return envelope
     except (OSError, ValueError, KeyError, TypeError, AttributeError) as error:
         envelope["error"] = f"No usable verification result: {error}"
@@ -174,6 +190,7 @@ def exit_status(result):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--cwd", type=Path, required=True)
+    parser.add_argument("--evidence-dir", type=Path)
     parser.add_argument("--expect", action="append", default=[])
     parser.add_argument("pytest_args", nargs=argparse.REMAINDER)
     args = parser.parse_args()
@@ -181,7 +198,7 @@ def main():
     if pytest_args[:1] == ["--"]:
         pytest_args = pytest_args[1:]
     try:
-        result = run_check(args.cwd.resolve(), args.expect, pytest_args)
+        result = run_check(args.cwd.resolve(), args.expect, pytest_args, args.evidence_dir)
     except (OSError, ValueError, ImportError, KeyError, TypeError, AttributeError) as error:
         result = {"result": "not_started", "error": str(error)}
     print(json.dumps(result, ensure_ascii=True, indent=2))
