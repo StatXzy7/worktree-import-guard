@@ -1,27 +1,93 @@
-"""Read-only environment preflight for the verify-worktree-imports skill."""
+"""Read-only probe of the selected project Python and its installation."""
+
 from __future__ import annotations
-import argparse, json, shutil, subprocess, sys
+
+import argparse
+import json
+import platform
+import sys
+from importlib.metadata import PackageNotFoundError, distribution, version
 from pathlib import Path
 
+
 def main() -> int:
-    p = argparse.ArgumentParser(); p.add_argument("--cwd", type=Path, required=True)
-    a = p.parse_args(); cwd = a.cwd.resolve()
-    out = {"status": "ready" if cwd.is_dir() else "missing_conditions", "cwd": str(cwd),
-           "python": sys.executable, "python_resolved": str(Path(sys.executable).resolve()),
-           "sys_prefix": sys.prefix, "sys_base_prefix": sys.base_prefix,
-           "detector_installed": False, "console_script": shutil.which("wt-import"),
-           "config": str(cwd / ".wt-import.json") if (cwd / ".wt-import.json").is_file() else None,
-           "next_step": "Run guarded pytest after confirming targets."}
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--cwd", type=Path, required=True)
+    cwd = parser.parse_args().cwd.resolve()
+    out = {
+        "status": "missing_conditions",
+        "conditions": {"cwd_accessible": cwd.is_dir()},
+        "problems": [],
+        "cwd": str(cwd),
+        "python": sys.executable,
+        "python_resolved": str(Path(sys.executable).resolve()),
+        "sys_prefix": sys.prefix,
+        "sys_base_prefix": sys.base_prefix,
+        "python_version": platform.python_version(),
+        "config_path": None,
+        "targets": [],
+    }
+    if not cwd.is_dir():
+        out["problems"].append("project directory is not accessible")
+        print(json.dumps(out, ensure_ascii=False, indent=2))
+        return 0
     try:
-        import pytest
-        out["pytest_version"] = pytest.__version__
-    except Exception as e:
-        out["pytest_version"] = None; out["pytest_error"] = str(e)
+        from worktree_import_guard.onboarding import pytest_available
+        from worktree_import_guard.project_config import find_config, load_config
+    except ImportError:
+        pytest_available = None
+        find_config = load_config = None
     try:
-        from importlib.metadata import version
-        out["detector_version"] = version("worktree-import-guard"); out["detector_installed"] = True
-    except Exception:
+        out["pytest_version"] = version("pytest")
+        out["conditions"]["pytest_compatible"] = bool(pytest_available and pytest_available())
+    except PackageNotFoundError:
+        out["pytest_version"] = None
+        out["conditions"]["pytest_compatible"] = False
+    try:
+        dist = distribution("worktree-import-guard")
+        out["detector_version"] = dist.version
+        out["conditions"]["detector_compatible"] = dist.version == "0.1.1"
+        from run_check import console_script
+
+        out["console_script"] = str(console_script(dist))
+        out["conditions"]["console_script_verified"] = True
+    except (PackageNotFoundError, ValueError, OSError):
         out["detector_version"] = None
-    if not out["detector_installed"]: out["status"] = "missing_conditions"
-    print(json.dumps(out, ensure_ascii=False, indent=2)); return 0
-if __name__ == "__main__": raise SystemExit(main())
+        out["conditions"]["detector_compatible"] = False
+        out["conditions"]["console_script_verified"] = False
+    if find_config:
+        try:
+            config = find_config(cwd)
+            if config:
+                out["config_path"] = str(config)
+                out["targets"] = [
+                    {"package": c.package, "expected_root": str(c.expected_root)}
+                    for c in load_config(config)
+                ]
+        except Exception as exc:
+            out["problems"].append(f"invalid_config: {exc}")
+    required = all(
+        out["conditions"].get(k, False)
+        for k in (
+            "cwd_accessible",
+            "pytest_compatible",
+            "detector_compatible",
+            "console_script_verified",
+        )
+    )
+    out["status"] = (
+        "ready"
+        if required and out["targets"]
+        else "needs_selection"
+        if required
+        else "missing_conditions"
+    )
+    if not required:
+        out["problems"].append("one or more required conditions are missing")
+    out["next_step"] = "Run guarded pytest after confirming targets."
+    print(json.dumps(out, ensure_ascii=False, indent=2))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

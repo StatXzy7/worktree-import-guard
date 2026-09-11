@@ -59,6 +59,17 @@ change PYTHONPATH/sys.path, or repair editable installs to make diagnosis pass.
 
 ## Execute once and bind the report
 
+For first use, an unconfirmed interpreter, or unknown detector/configuration,
+run the read-only preflight with the selected project Python before testing:
+
+```text
+<project-python> <skill>/scripts/preflight.py --cwd <project>
+```
+
+Treat `ready`, `needs_selection`, and `missing_conditions` as preparation
+states. Preflight never runs project tests or installs anything; resolve only
+the reported missing selection or condition before invoking the helper.
+
 Run the bundled helper using the confirmed **project Python**, not an arbitrary
 Python from the agent host. Absolute paths allow installing only this Skill folder:
 

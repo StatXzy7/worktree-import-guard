@@ -196,7 +196,7 @@ class ImportObserver:
     @staticmethod
     def _static_locations(value: object) -> tuple[str, ...]:
         value_type = type(value)
-        supported = isinstance(value, (list, tuple)) or (
+        supported = isinstance(value, list | tuple) or (
             value_type.__name__ == "_NamespacePath"
             and value_type.__module__ == "_frozen_importlib_external"
         )
@@ -368,3 +368,4 @@ class ImportObserver:
                 paths_frozen=True,
             )
         )
+

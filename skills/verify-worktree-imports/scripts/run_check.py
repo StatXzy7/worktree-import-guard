@@ -124,7 +124,7 @@ def run_check(cwd, expectations, pytest_args, evidence_dir=None):
     if not cwd.is_dir():
         raise ValueError("Target project is not accessible here; verification was not started")
     script, contracts, tool = prepare(cwd, expectations)
-    root = Path(evidence_dir).expanduser() if evidence_dir else None
+    root = Path(evidence_dir).expanduser().resolve() if evidence_dir else None
     if root is not None:
         root.mkdir(parents=True, exist_ok=True)
         if root.is_symlink() or not root.is_dir():
