@@ -12,40 +12,37 @@ and explains what to inspect when the locations disagree.
 ## Try it in two minutes
 
 Install into the same Python environment where your project's pytest already works. The current
-release is a source preview; use the pinned revision below:
+public entry is a **verified source preview** pinned below; use the matching executable for every
+command in this section.
 
 Linux / macOS:
 
 ```sh
 ".venv/bin/python" -m pip install "git+https://github.com/StatXzy7/worktree-import-guard.git@edae3e6fa9a0b065385a080c371c9c17728b4656"
+".venv/bin/wt-import" --demo
+".venv/bin/wt-import" --setup
 ```
 
-Windows PowerShell:
+Windows PowerShell (no activation or execution-policy changes):
 
 ```powershell
 & ".venv\Scripts\python.exe" -m pip install "git+https://github.com/StatXzy7/worktree-import-guard.git@edae3e6fa9a0b065385a080c371c9c17728b4656"
+& ".venv\Scripts\wt-import.exe" --demo
+& ".venv\Scripts\wt-import.exe" --setup
 ```
 
-Use the matching executable below. You do not need to understand worktrees first. Run the demo to
-see the problem in a private, offline fixture:
-
-```sh
-wt-import --demo
-```
-
-Then, from the project directory whose tests you normally run, start the guided check:
-
-```sh
-wt-import --doctor
-```
-
-`--doctor` asks you to confirm the project and Python environment, suggests package directories,
-and lets you review the settings before saving. It never imports your package during discovery,
+Replace `.venv` with the path to your **existing** test environment. `--demo` runs a private,
+offline example. `--setup` confirms the project and Python environment, suggests package directories,
+and lets you review settings before saving. It never imports your package during discovery,
 installs anything, changes `PYTHONPATH`, or repairs the environment. After setup, repeat the check
 whenever you run tests:
 
 ```sh
-wt-import -- -q
+".venv/bin/wt-import" -- -q
+```
+
+```powershell
+& ".venv\Scripts\wt-import.exe" -- -q
 ```
 
 If the result is **FAIL**, compare the expected and observed paths and inspect the Python environment
@@ -73,14 +70,9 @@ WORKTREE IMPORT GUARD: PASS
 
 ## Install into your existing test environment
 
-**Public source preview, not a PyPI release.** No need to contact the author or obtain a wheel.
-You need Python with pip, Git, and network access to download source, build dependencies and pytest.
-The commit below is fixed and verified; the project is still alpha.
-
-Use the environment where your project's pytest already works. `.venv` below is an example of
-that **existing environment**; replace it with your real path. If you followed Quick Start, this
-step is already complete. If you do not have a Python test project yet, the recorded example
-explains the tool without installing anything.
+**Public source preview, not a PyPI release.** You need Python with pip, Git, and network access to
+download source, build dependencies and pytest. The commit below is fixed and verified; the project
+is still alpha. If you already completed Quick Start, this step is done.
 
 Linux / macOS:
 
@@ -88,7 +80,7 @@ Linux / macOS:
 ".venv/bin/python" -m pip install "git+https://github.com/StatXzy7/worktree-import-guard.git@edae3e6fa9a0b065385a080c371c9c17728b4656"
 ```
 
-Windows PowerShell (no activation or execution-policy changes):
+Windows PowerShell:
 
 ```powershell
 & ".venv\Scripts\python.exe" -m pip install "git+https://github.com/StatXzy7/worktree-import-guard.git@edae3e6fa9a0b065385a080c371c9c17728b4656"
@@ -97,41 +89,27 @@ Windows PowerShell (no activation or execution-policy changes):
 Installation satisfies the tool's pytest requirement; already supported dependencies are retained.
 **Upgrading an earlier 0.1.0 preview?** After this install, follow the
 [guard-only refresh command](docs/troubleshooting.md#refresh-an-older-source-preview) to replace the
-same-version tool without reinstalling pytest. If this exact preview is already installed, skip
-installation. During an incident, do not sync or repair the target project first.
+same-version tool without reinstalling pytest. During an incident, do not sync or repair the target
+project first.
 
 ## Choose an entry
 
 | First, see what it does | Check my project |
 | --- | --- |
-| `wt-import --demo` | `wt-import --doctor` |
-| Runs an offline, private example with the installed tool. | Guided setup; `--setup` remains an equivalent spelling. |
+| `".venv/bin/wt-import" --demo` | `".venv/bin/wt-import" --setup` |
+| Runs an offline, private example with the installed tool. | Guided first-time setup; saves `.wt-import.json`. |
 
-Use the executable in the same environment as the Python above:
+On Windows, use `& ".venv\Scripts\wt-import.exe"` instead of the POSIX paths above.
 
-```sh
-".venv/bin/wt-import" --demo
-".venv/bin/wt-import" --doctor
-# After setup, repeat checks without re-entering directories:
-".venv/bin/wt-import" -- -q
-```
+## 0.1.1 candidate (not on PyPI yet)
 
-```powershell
-& ".venv\Scripts\wt-import.exe" --demo
-& ".venv\Scripts\wt-import.exe" --doctor
-# After setup:
-& ".venv\Scripts\wt-import.exe" -- -q
-```
+The repository's current development candidate adds reusable `--doctor`, improved Skill preflight
+states, and report identity checks. It is **not** the public README install target until a real PyPI
+release is downloaded and verified. Maintainers and early testers can install a verified wheel or the
+exact candidate commit after reading [candidate quick start](docs/candidate-quickstart.md).
 
-Run setup from your project's root. Choose package number(s), review the settings, then confirm.
-Setup creates `.wt-import.json`; you do not need to write it. Multiple candidates require a choice,
-and existing files are never overwritten. It never installs, activates or repairs an environment.
-[Settings and unusual layouts](docs/first-use.md).
-
-The demo deliberately selects a wrong path in a disposable fixture, without inspecting your project.
-With Git it creates real worktrees, otherwise it labels two ordinary directories. It needs no
-downloads after installation. The [maintainer demo](examples/cross-worktree-demo/README.md)
-separately verifies the complete editable-install chain.
+With saved settings, the candidate's `--doctor` reuses `.wt-import.json` and asks once before
+running guarded pytest. `--setup` still refuses to overwrite an existing file.
 
 ## Let a coding agent check
 
@@ -169,7 +147,7 @@ environments and are not recommended here. [Troubleshooting, including uv](docs/
 For automation or a one-off check, no setup or config is needed:
 
 ```sh
-wt-import --expect demo_pkg=src/demo_pkg -- -q
+".venv/bin/wt-import" --expect demo_pkg=src/demo_pkg -- -q
 ```
 
 Flat layout: `--expect demo_pkg=demo_pkg`. Use the Python import name, not necessarily the pip name,

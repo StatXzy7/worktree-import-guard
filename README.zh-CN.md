@@ -29,16 +29,44 @@ Tests passed.
 WORKTREE IMPORT GUARD: PASS
 ```
 
-## 安装到已有测试环境
+## 两分钟上手
 
-**目前是公开源码预览，不是正式 PyPI 发行版。** 无须联系作者索取 wheel。
-需要 Python、pip、Git，以及下载源码、构建依赖和 pytest 的网络连接。以下固定提交已验证，
-项目仍处于 alpha 阶段。
-
-检查自己的项目时，使用平时能运行该项目 pytest 的环境。`.venv` 只是这个**现有环境**的示例，
-请替换为实际路径。若还没有 Python 测试项目，先看上面的真实示例即可，不必安装。
+安装到**已有 pytest 环境**中。公开入口是下方固定的**已验证源码预览**；本节所有命令都使用同一环境中的
+console script，不要依赖激活环境或 PATH 中的其他安装。
 
 Windows PowerShell（无须激活环境或修改执行策略）：
+
+```powershell
+& ".venv\Scripts\python.exe" -m pip install "git+https://github.com/StatXzy7/worktree-import-guard.git@edae3e6fa9a0b065385a080c371c9c17728b4656"
+& ".venv\Scripts\wt-import.exe" --demo
+& ".venv\Scripts\wt-import.exe" --setup
+```
+
+Linux / macOS：
+
+```sh
+".venv/bin/python" -m pip install "git+https://github.com/StatXzy7/worktree-import-guard.git@edae3e6fa9a0b065385a080c371c9c17728b4656"
+".venv/bin/wt-import" --demo
+".venv/bin/wt-import" --setup
+```
+
+`.venv` 只是**现有环境**的示例，请替换为实际路径。`--demo` 运行离线临时示例；`--setup` 确认项目与环境、
+选择包目录、确认保存并运行测试。设置完成后每次只需：
+
+```powershell
+& ".venv\Scripts\wt-import.exe" -- -q
+```
+
+```sh
+".venv/bin/wt-import" -- -q
+```
+
+## 安装到已有测试环境
+
+**目前是公开源码预览，不是正式 PyPI 发行版。** 需要 Python、pip、Git，以及下载源码、构建依赖和 pytest
+的网络连接。以下固定提交已验证，项目仍处于 alpha 阶段。若已完成“两分钟上手”，可跳过重复安装。
+
+Windows PowerShell：
 
 ```powershell
 & ".venv\Scripts\python.exe" -m pip install "git+https://github.com/StatXzy7/worktree-import-guard.git@edae3e6fa9a0b065385a080c371c9c17728b4656"
@@ -52,38 +80,25 @@ Linux / macOS：
 
 安装会满足工具的 pytest 依赖要求，保留已符合版本范围的依赖。**从旧的 0.1.0 预览升级时**，
 完成上述安装后，再按[只更新工具的命令](docs/troubleshooting.md#refresh-an-older-source-preview)替换
-同版本旧代码，不重装 pytest。若已安装这个确切预览，直接检查即可。排查现场时不要先 sync 或修复待测项目。
+同版本旧代码，不重装 pytest。排查现场时不要先 sync 或修复待测项目。
 
 ## 选择一个入口
 
 | 先体验 | 检查我的项目 |
 | --- | --- |
-| `wt-import --demo` | `wt-import --setup` |
-| 用已安装工具运行离线临时示例。 | 确认项目与环境、选择包目录、确认保存并运行测试。 |
+| `& ".venv\Scripts\wt-import.exe" --demo` | `& ".venv\Scripts\wt-import.exe" --setup` |
+| 用已安装工具运行离线临时示例。 | 首次设置；保存 `.wt-import.json`。 |
 
-使用与上述 Python 属于同一环境的程序：
+POSIX 将路径改为 `".venv/bin/wt-import"`。
 
-```powershell
-& ".venv\Scripts\wt-import.exe" --demo
-& ".venv\Scripts\wt-import.exe" --setup
-# 首次设置后，每次只需：
-& ".venv\Scripts\wt-import.exe" -- -q
-```
+## 0.1.1 候选版（尚未发布到 PyPI）
 
-```sh
-".venv/bin/wt-import" --demo
-".venv/bin/wt-import" --setup
-# 首次设置后：
-".venv/bin/wt-import" -- -q
-```
+仓库当前候选版增加了可复用的 `--doctor`、更明确的 Skill 准备状态，以及报告身份校验。
+在真实 PyPI 下载并验证之前，它**不是**公开 README 的安装目标。维护者与早期测试者可在阅读
+[候选版快速开始](docs/candidate-quickstart.md) 后安装已验证 wheel 或精确候选提交。
 
-在项目根目录运行设置，输入候选包编号，最后检查即将保存的内容。向导生成 `.wt-import.json`，
-你不必手写。多个候选必须明确选择，已有配置不会被覆盖；向导不安装、激活或修复环境。
-[配置与特殊布局](docs/first-use.md)。
-
-Demo 只在私有临时目录中故意选择错误来源，不检查你的项目。有 Git 时创建真实 worktree，
-没有 Git 时标注为两份普通目录。安装后不再下载依赖。
-[维护者 Demo](examples/cross-worktree-demo/README.md) 另行验证完整 editable 安装链。
+已有配置时，候选版的 `--doctor` 复用 `.wt-import.json`，确认一次后运行 guarded pytest。
+`--setup` 仍拒绝覆盖已有文件。
 
 ## 分别看测试结果和来源结果
 
@@ -112,7 +127,7 @@ Demo 只在私有临时目录中故意选择错误来源，不检查你的项目
 自动化或单次检查可以不设置配置，直接运行：
 
 ```sh
-wt-import --expect demo_pkg=src/demo_pkg -- -q
+".venv/bin/wt-import" --expect demo_pkg=src/demo_pkg -- -q
 ```
 
 flat 布局使用 `demo_pkg=demo_pkg`。左边是 Python 的 import 名称，未必等于 pip 安装名；

@@ -65,7 +65,14 @@ notes are [0.1.1-notes.md](0.1.1-notes.md); 0.1.0 notes remain historical drafts
 
 ## Disabled workflow template
 
-[release.yml.example](release.yml.example) is outside Actions discovery. It only accepts manual
+[release.yml.example](release.yml.example) remains outside Actions discovery as a reference copy.
+The repository also contains an **enabled** [.github/workflows/release.yml](../../.github/workflows/release.yml)
+that follows the same build-once / test-artifacts / publish-after-approval shape. Enabling the
+workflow file does **not** mean PyPI already hosts the package, that Trusted Publisher credentials
+exist, or that the protected `pypi` environment is configured. Treat PyPI as unpublished until a
+real index download and hash verification succeed.
+
+The template only accepts manual
 runs on main in this repository and the literal 0.1.1 approval input. It builds once, tests those
 exact files on Ubuntu and Windows, then publishes after both jobs and environment approval.
 The publish job downloads artifacts from the same run, verifies trusted build-job hashes and never
