@@ -1,7 +1,7 @@
 # Keep the check in an existing pytest workflow
 
 Use the environment and project directory that already run your tests. Install using the
-[fixed-source preview command](../README.md#install-into-your-existing-test-environment), then run
+install command in [README](../README.md#install-into-your-existing-test-environment), then run
 `wt-import --setup` once. Review `.wt-import.json` and commit it only if your team wants that contract.
 
 Replace the one pytest command you choose to guard:

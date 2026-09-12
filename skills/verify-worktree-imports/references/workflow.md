@@ -1,22 +1,19 @@
 # Compatibility and installation
 
-Skill revision 1 accepts report schema 2 from CLI 0.1.1 or the verified 0.1.0 source
-preview at `edae3e6fa9a0b065385a080c371c9c17728b4656`. CLI and Skill versions are
-independent. A bare 0.1.0 version string cannot identify which preview was installed.
-The helper checks distribution metadata and direct_url for the pinned preview.
+Skill revision 1 accepts report schema 2 from CLI 0.1.2 and compatible future
+releases. CLI and Skill versions are independent; a bare `worktree-import-guard`
+version string is used to select compatible behavior.
 
-The current public route is a source preview, not a released PyPI package. After
-authorization, using the confirmed project Python and a subprocess argument array:
+The current public route is the released package:
 
 ```text
-<project-python> -m pip install git+https://github.com/StatXzy7/worktree-import-guard.git@edae3e6fa9a0b065385a080c371c9c17728b4656
+<project-python> -m pip install "worktree-import-guard==0.1.2"
 ```
 
-If an older same-version preview remains installed, first verify pytest >=8.2,<10
-is satisfied, then refresh only this tool with the same command plus
-`--force-reinstall --no-deps`, only within installation authorization. Never force
-reinstall all dependencies or use no-deps to conceal unmet requirements. No network
-or no compatible installation means no run, not a fabricated engine UNKNOWN.
+If an older candidate/preview remains installed in the target environment, remove
+that environment’s legacy installation and install the released route.
+Never force-reinstall dependencies to work around unmet requirements. No compatible
+installation means no run, and no fabricated engine UNKNOWN.
 
 For the probe, inspect `sys.executable`, `sys.prefix`, `sys.base_prefix`, and
 `importlib.metadata.distribution('worktree-import-guard')` version, location and

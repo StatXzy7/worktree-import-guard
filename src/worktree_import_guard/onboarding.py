@@ -5,10 +5,12 @@ from __future__ import annotations
 import json
 import shlex
 import sys
-from importlib.metadata import PackageNotFoundError, version
+from importlib.metadata import PackageNotFoundError, distribution, version
 from pathlib import Path
 
 from .contracts import ContractError, parse_contracts
+from .environment_probe import choose_default_candidate, probe_candidates
+from .launcher import command_for_path, console_script
 from .models import PackageContract
 from .project_config import CONFIG_NAME, config_data, find_config, load_config, save_config
 
@@ -72,25 +74,76 @@ def _python_command(python: Path, *args: str) -> str:
     return shlex.join(words)
 
 
-def _environment_banner(directory: Path) -> None:
-    print(f"Project: {directory}\nPython: {sys.executable}\nEnvironment: {sys.prefix}")
-    print("This checks that pytest imports the code you just edited, in this Python environment.")
-    print("It diagnoses the source location; it does not install, activate, or repair anything.")
-    venv_python = (
-        directory / ".venv" / ("Scripts/python.exe" if sys.platform == "win32" else "bin/python")
-    )
-    if (
-        venv_python.is_file()
-        and Path(sys.prefix).absolute() != venv_python.parent.parent.absolute()
-    ):
-        print(f"Possible project environment (not selected automatically): {venv_python}")
-        print("If that is your test environment, cancel here. Check whether guard is installed:")
-        print(_python_command(venv_python, "-m", "pip", "show", "worktree-import-guard"))
-        print(
-            "If missing, follow the README installation command using that Python. "
-            "Then restart there:"
+def _bound_next_check_command(extra_argument: str) -> str:
+    try:
+        script = console_script(distribution("worktree-import-guard"))
+    except Exception:
+        command = _python_command(
+            Path(sys.executable),
+            "-m",
+            "worktree_import_guard.cli",
+            extra_argument,
         )
-        print(_python_command(venv_python, "-m", "worktree_import_guard.cli", "--setup"))
+        return f"Next time: {command}"
+    return f"Next time: {command_for_path(script, [extra_argument])}"
+
+
+def _bound_next_doctor_command() -> str:
+    return _bound_next_check_command("-- -q")
+
+
+def _environment_banner(directory: Path) -> None:
+    print(f"Project: {directory}")
+    candidates = [*probe_candidates(directory)]
+    if not candidates:
+        print(
+            "No direct interpreter candidates were detected. "
+            "Please provide an interpreter command and rerun this command there."
+        )
+        return
+
+    print("Detected interpreter candidates:")
+    for index, candidate in enumerate(candidates, 1):
+        status = []
+        if candidate.get("pytest_available"):
+            status.append("pytest:ok")
+        else:
+            status.append("pytest:unavailable")
+        if candidate.get("detector_installed"):
+            compat = "compatible" if candidate.get("detector_compatible") else "incompatible"
+            status.append(f"worktree-import-guard:{compat}")
+        else:
+            status.append("worktree-import-guard:not-installed")
+        error = candidate.get("error")
+        line = (
+            f"{index:>2}. {candidate['label']}: python={candidate['python']} "
+            f"python_version={candidate['python_version']} status=[{', '.join(status)}]"
+        )
+        if error:
+            line += f" error={error}"
+        print(line)
+
+    alt_envs = [item for item in candidates if item["label"] != "current interpreter"]
+    if alt_envs:
+        print("If one of these is your real test environment, verify installation there first:")
+        print("  {python} -m pip show worktree-import-guard".format(python=alt_envs[0]["python"]))
+        print("Then continue with the README installation in that environment.")
+
+    recommended, ambiguous = choose_default_candidate(candidates)
+    if recommended is not None:
+        print(
+            "Most likely test environment (inference, not automatic selection): "
+            f"{recommended['label']}"
+        )
+        print("Copy-paste command for this project:")
+        print(f"  {recommended['command_setup']}")
+        if ambiguous:
+            print("Evidence is not conclusive; confirm interpreter before continuing.")
+    else:
+        print(
+            "No candidate has both pytest>=8.2 and a compatible installed detector. "
+            "Please install the tool in the existing test environment first."
+        )
 
 
 def _require_pytest() -> None:
@@ -120,17 +173,20 @@ def doctor(directory: Path) -> tuple[PackageContract, ...] | None:
     except ContractError as error:
         print(f"Configuration file: {config_path}")
         raise ContractError(f"saved settings cannot be used: {error}") from error
-    _environment_banner(directory)
     _require_pytest()
-    print(f"Configuration: {config_path}")
+    print(f"Configuration file: {config_path}")
     for contract in contracts:
         print(f"  {contract.package} = {contract.declared_path}")
     print("This reuses saved settings; it does not overwrite your configuration.")
     print("Then run pytest in this project. Your tests may have side effects.")
-    if input("Run the check now with these settings? [y/N] ").lower() not in {"y", "yes"}:
+    try:
+        if input("Run the check now with these settings? [y/N] ").lower() not in {"y", "yes"}:
+            print("Check cancelled; tests were not started.")
+            return None
+    except (EOFError, KeyboardInterrupt):
         print("Check cancelled; tests were not started.")
         return None
-    print("Next time: wt-import -- -q")
+    print(_bound_next_doctor_command())
     return contracts
 
 
@@ -186,10 +242,17 @@ def setup(directory: Path) -> tuple[PackageContract, ...] | None:
             raise ContractError("choose existing source package directories before saving settings")
         print(f"Save {directory / CONFIG_NAME}:\n{json.dumps(data, indent=2, ensure_ascii=False)}")
         print("Then run pytest in this project. Your tests may have side effects.")
-        if input("3/3 Save these settings and run tests now? [y/N] ").lower() not in {"y", "yes"}:
+        try:
+            if input("3/3 Save these settings and run tests now? [y/N] ").lower() not in {
+                "y",
+                "yes",
+            }:
+                return None
+        except (EOFError, KeyboardInterrupt):
+            print("Setup cancelled; tests were not started.")
             return None
         save_config(directory, data)
-        print("Saved. Next time: wt-import -- -q")
+        print(_bound_next_check_command("-- -q"))
         return contracts
     except (EOFError, KeyboardInterrupt):
         print("Setup cancelled; tests were not started.")

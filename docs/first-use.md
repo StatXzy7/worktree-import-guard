@@ -2,7 +2,7 @@
 
 Install into the Python environment that already runs your project's tests. Run `wt-import --demo`
 to see a disposable example, then `wt-import --setup` in your own project for first-time configuration.
-After saving settings, repeat checks with `wt-import -- -q`. The 0.1.1 candidate also provides
+After saving settings, repeat checks with `wt-import -- -q`. The 0.1.2 release also provides
 `--doctor` to reuse saved settings with one confirmation; see [candidate quick start](candidate-quickstart.md).
 The demo uses the installed runtime, without downloads or dev extras. Its fixture deliberately
 selects paths in a private temporary directory. With Git it creates real worktrees; without Git

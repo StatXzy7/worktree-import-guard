@@ -3,10 +3,11 @@
 > **Changed the code, but the tests pass suspiciously?**
 >
 > `wt-import` tells you which copy of your Python package pytest actually imported.
+> **`pytest passed, but imported another worktree.`**
 
-You changed **feature**, but Python still loaded **main**. This is easy to miss with Git worktrees,
-editable installs, IDEs, and coding agents. `wt-import` checks the source location while pytest runs
-and explains what to inspect when the locations disagree.
+You changed **feature**, but pytest passed while Python still loaded **main**. This is easy to miss with
+Git worktrees, stale editable installs, IDEs, and coding agents. `wt-import` checks the source location
+while pytest runs and explains what to inspect when the locations disagree.
 [简体中文](README.zh-CN.md)
 
 ## Try it in two minutes
@@ -73,6 +74,35 @@ Tests passed.
 WORKTREE IMPORT GUARD: PASS
 ```
 
+## Reproducible demos
+
+1. **Git worktree mismatch**
+
+```sh
+git worktree add -b demo-feature /tmp/demo-feature ./main
+cd /tmp/demo-feature
+"./.venv/bin/wt-import" --setup
+"./.venv/bin/wt-import" -- -- -q
+```
+
+2. **Stale editable install**
+
+```sh
+python -m venv /tmp/demo-env
+/tmp/demo-env/bin/python -m pip install -e /tmp/main_worktree
+/tmp/demo-env/bin/wt-import --setup
+/tmp/demo-env/bin/wt-import -- -- -q
+```
+
+3. **Coding-agent worktree**
+
+```sh
+cp -r skills/verify-worktree-imports /tmp/agent-worktree/.agents/skills/
+/tmp/demo-env/bin/wt-import --doctor
+# Ask your local host:
+# Use $verify-worktree-imports to check this project; do not repair the environment.
+```
+
 ## Install into your existing test environment
 
 **PyPI release 0.1.2** (alpha). You need Python with pip and network access. If you already completed
@@ -124,6 +154,14 @@ may require an environment/install confirmation. [Validation status](docs/skill-
 **Tests failed + source PASS still means the tests failed. UNKNOWN is never a pass.**
 Native nonzero pytest exits are preserved. With pytest exit 0, source PASS / FAIL / UNKNOWN exit
 0 / 1 / 2. No tests preserves pytest exit 5. JSON write failures do not hide pytest failures.
+
+## FAQ
+
+### Why not just print `package.file`?
+
+Printing `package.file` is only one observed module path and can miss cross-worktree or stale editable behavior.
+This tool captures one reproducible guard run, validates identities across all selected contracts, and reports
+why a run is PASS, FAIL, or UNKNOWN so you can distinguish test result from source provenance.
 
 ## Scope and requirements
 

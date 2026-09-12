@@ -24,6 +24,20 @@ source PASS, installation refusal, explanation-only and demo-only. Logs must sho
 the user prompt, actual tools and result; a hand-run helper is not a Skill session.
 No implicit trigger success rate is claimed. External pilot status: NOT_STARTED.
 
+## Real Host E2E status against the required 7 cases
+
+| Case | Status |
+| --- | --- |
+| correct source + pytest pass | NOT_VERIFIED_HOST |
+| wrong worktree + pytest pass | NOT_VERIFIED_HOST |
+| source unknown | NOT_VERIFIED_HOST |
+| pytest fail + source pass | NOT_VERIFIED_HOST |
+| install refused | NOT_VERIFIED_HOST |
+| demo only | NOT_VERIFIED_HOST |
+| explanation only | NOT_VERIFIED_HOST |
+
+Current evidence is still pre-host (fixture + static) and cannot upgrade `HOST_UNVERIFIED` to verified.
+
 ## Actual local host attempts, 2026-09-11 (Asia/Shanghai)
 
 Session Skill source: `dbadf809e397d61a1f98af2d254bbb261f0abc00`, before the

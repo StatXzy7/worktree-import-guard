@@ -60,3 +60,47 @@ def test_setup_still_refuses_existing_config(monkeypatch, tmp_path):
     answers(monkeypatch, [])
     with pytest.raises(ContractError, match="already exists"):
         setup(tmp_path)
+
+
+def test_doctor_cancelled_on_eof(monkeypatch, tmp_path):
+    package(tmp_path / "pkg")
+    (tmp_path / CONFIG_NAME).write_text(
+        json.dumps({"schema_version": 1, "expect": {"pkg": "pkg"}}, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(sys.stdin, "isatty", lambda: True)
+    monkeypatch.setattr("builtins.input", lambda prompt: (_ for _ in ()).throw(EOFError))
+    assert doctor(tmp_path) is None
+
+
+def test_doctor_cancelled_on_keyboard_interrupt(monkeypatch, tmp_path):
+    package(tmp_path / "pkg")
+    (tmp_path / CONFIG_NAME).write_text(
+        json.dumps({"schema_version": 1, "expect": {"pkg": "pkg"}}, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(sys.stdin, "isatty", lambda: True)
+    monkeypatch.setattr("builtins.input", lambda prompt: (_ for _ in ()).throw(KeyboardInterrupt))
+    assert doctor(tmp_path) is None
+
+
+def test_doctor_shows_bound_next_check_command(monkeypatch, tmp_path, capsys):
+    package(tmp_path / "pkg")
+    (tmp_path / CONFIG_NAME).write_text(
+        json.dumps({"schema_version": 1, "expect": {"pkg": "pkg"}}, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(sys.stdin, "isatty", lambda: True)
+    script = str(tmp_path / "My Project" / "wt-import.exe")
+    monkeypatch.setattr("worktree_import_guard.onboarding.console_script", lambda *_: script)
+    monkeypatch.setattr(
+        "worktree_import_guard.onboarding.distribution",
+        lambda name: None
+    )
+    monkeypatch.setattr(
+        "worktree_import_guard.onboarding.command_for_path",
+        lambda _script, _args: f"\"{script}\" -- -q",
+    )
+    answers(monkeypatch, ["y"])
+    assert doctor(tmp_path) is not None
+    assert f'Next time: "{script}" -- -q' in capsys.readouterr().out

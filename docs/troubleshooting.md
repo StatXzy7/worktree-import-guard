@@ -6,7 +6,7 @@ The checks below do not repair your environment. Installing/syncing dependencies
 | Symptom | What to do |
 | --- | --- |
 | Shell cannot find `wt-import` | Invoke the console script beside that environment's pytest: `.venv/bin/wt-import` or `& ".venv\Scripts\wt-import.exe"`. Replace `.venv` with the real path; do not fall back to another PATH entry. |
-| Script does not exist there | Check installation with that environment's `python -m pip show worktree-import-guard`. If absent, install the fixed-source preview there using the README command; installation may adjust dependencies. If pip is missing, use your project's established installer against that same interpreter. |
+| Script does not exist there | Check installation with that environment's `python -m pip show worktree-import-guard`. If absent, install the documented route there using the README command; installation may adjust dependencies. If pip is missing, use your project's established installer against that same interpreter. |
 | No saved settings, malformed `PACKAGE=PATH` | Run `--setup` once, or use the Python import name and expected package directory, e.g. `--expect demo_pkg=src/demo_pkg`. Quote the whole argument if its path contains spaces. |
 | `--cwd` does not exist | Correct the directory or invoke from the project root without `--cwd`. Expected paths start there; report paths start at the original invocation directory. |
 | `TARGET_NOT_OBSERVED` | Check the import spelling and test selection. Select tests that use that package in this process. A child-process import is outside scope. Do not remove the target just to get green. |
